@@ -111,7 +111,11 @@ export default function WatchlistPage() {
   // 카테고리 필터링
   const filteredWatchlist = sortedWatchlist.filter(item => {
     if (filterCategory === 'ALL') return true
-    return item.asset.market_category?.code === filterCategory
+    // asset_type을 기준으로 필터링 (CRYPTO, STOCK 등)
+    if (filterCategory === 'CRYPTO') return item.asset.asset_type === 'CRYPTO'
+    if (filterCategory === 'STOCK') return item.asset.asset_type === 'STOCK'
+    if (filterCategory === 'ETF') return item.asset.asset_type === 'ETF'
+    return true
   })
 
   if (!session?.user) {

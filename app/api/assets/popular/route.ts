@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import { Database } from '@/lib/types/database'
 
 const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
+  process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key"
 )
 
 export async function GET(request: NextRequest) {
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '10')
 
-    // 인기 자산 가져오기 (실제로는 거래량, 관심종목 등록 수 등을 기준으로)
+    // 인기 자산 가져오기(실제로는 거래량, 관심종목 등록 수등을 기준으로)
     const { data: assets, error } = await supabase
       .from('asset')
       .select(`
@@ -195,4 +195,5 @@ function generateSamplePopularAssets(limit: number) {
   return popularAssets.slice(0, limit)
 }
 
-export const runtime = 'edge'
+// Edge runtime 제거 - Supabase 호환성을 위해
+// export const runtime = 'edge'

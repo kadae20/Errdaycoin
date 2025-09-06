@@ -73,7 +73,7 @@ async function supabaseRateLimit(
     }
 
     // Record this request
-    await supabase
+    await (supabase as any)
       .from('ratelimit_hits')
       .upsert(
         {
@@ -111,11 +111,11 @@ function memoryRateLimit(
 
   // Clean expired entries periodically
   if (Math.random() < 0.01) { // 1% chance
-    for (const [key, value] of memoryStore.entries()) {
+    Array.from(memoryStore.entries()).forEach(([key, value]) => {
       if (value.resetTime < now) {
         memoryStore.delete(key)
       }
-    }
+    })
   }
 
   if (!current || current.resetTime < now) {

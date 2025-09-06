@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import { Database } from '@/lib/types/database'
 
 const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-key'
 )
 
 export async function GET(request: NextRequest) {
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(limit)
 
-    // 카테고리 필터
+    // 카테고리 ?�터
     if (category !== 'ALL') {
       const { data: categoryData } = await supabase
         .from('market_category')
@@ -36,8 +36,8 @@ export async function GET(request: NextRequest) {
         .single()
 
       if (categoryData) {
-        // 해당 카테고리의 자산만 필터링하기 위해 조인 조건 추가
-        query = query.eq('asset.market_category_id', categoryData.id)
+        // ?�당 카테고리???�산�??�터링하�??�해 조인 조건 추�?
+        query = query.eq('asset.market_category_id', (categoryData as any).id)
       }
     }
 
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error('AI analyses query error:', error)
       
-      // 데이터가 없으면 샘플 데이터 생성
+      // ?�이?��? ?�으�??�플 ?�이???�성
       const sampleAnalyses = generateSampleAnalyses(category, type, limit)
       return NextResponse.json({
         analyses: sampleAnalyses,
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // 실제 데이터가 없으면 샘플 데이터 생성
+    // ?�제 ?�이?��? ?�으�??�플 ?�이???�성
     if (!analyses || analyses.length === 0) {
       const sampleAnalyses = generateSampleAnalyses(category, type, limit)
       return NextResponse.json({
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('AI analysis API error:', error)
     
-    // 에러 시에도 샘플 데이터 반환
+    // ?�러 ?�에???�플 ?�이??반환
     const sampleAnalyses = generateSampleAnalyses('ALL', 'TECHNICAL', 10)
     return NextResponse.json({
       analyses: sampleAnalyses,
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// 샘플 AI 분석 데이터 생성
+// ?�플 AI 분석 ?�이???�성
 function generateSampleAnalyses(category: string, type: string, limit: number) {
   const assets = [
     { id: 1, symbol: 'BTC-USD', name: 'Bitcoin', name_ko: '비트코인', logo_url: null, currency: 'USD' },
@@ -94,23 +94,23 @@ function generateSampleAnalyses(category: string, type: string, limit: number) {
   const signals = ['BUY', 'SELL', 'HOLD']
   const analysisReasons = {
     TECHNICAL: [
-      '상승 삼각형 패턴이 형성되고 있으며, RSI가 과매도 구간에서 반등하고 있습니다. 거래량도 증가하는 추세입니다.',
-      'MACD가 신호선을 상향 돌파했으며, 볼린저 밴드 하단에서 지지를 받고 있습니다.',
-      '이동평균선 정배열이 형성되었고, 스토캐스틱이 20선 아래에서 골든크로스를 보이고 있습니다.',
-      '하락 웨지 패턴에서 상향 돌파가 발생했으며, 피보나치 61.8% 되돌림 지점에서 강한 지지를 받고 있습니다.',
-      'RSI 다이버전스가 나타나고 있으며, 거래량 증가와 함께 상승 모멘텀이 강화되고 있습니다.',
+      '?�승 ?�각???�턴???�성?�고 ?�으�? RSI가 과매??구간?�서 반등?�고 ?�습?�다. 거래?�도 증�??�는 추세?�니??',
+      'MACD가 ?�호?�을 ?�향 ?�파?�으�? 볼린?� 밴드 ?�단?�서 지지�?받고 ?�습?�다.',
+      '?�동?�균???�배?�이 ?�성?�었�? ?�토캐스?�이 20???�래?�서 골든?�로?��? 보이�??�습?�다.',
+      '?�락 ?��? ?�턴?�서 ?�향 ?�파가 발생?�으�? ?�보?�치 61.8% ?�돌�?지?�에??강한 지지�?받고 ?�습?�다.',
+      'RSI ?�이버전?��? ?��??�고 ?�으�? 거래??증�??� ?�께 ?�승 모멘?�??강화?�고 ?�습?�다.',
     ],
     SENTIMENT: [
-      '최근 긍정적인 뉴스 발표로 시장 심리가 개선되었으며, 소셜미디어 언급량이 급증하고 있습니다.',
-      '기관 투자자들의 매수세가 강화되고 있으며, 공포 탐욕 지수가 중립에서 탐욕 구간으로 이동했습니다.',
-      '업계 전문가들의 긍정적 전망이 증가하고 있으며, 펀더멘털 분석에서도 강세를 보이고 있습니다.',
-      '시장 변동성이 감소하면서 투자자 신뢰도가 회복되고 있으며, 리스크온 모드로 전환되고 있습니다.',
+      '최근 긍정?�인 ?�스 발표�??�장 ?�리가 개선?�었?�며, ?�셜미디???�급?�이 급증?�고 ?�습?�다.',
+      '기�? ?�자?�들??매수?��? 강화?�고 ?�으�? 공포 ?�욕 지?��? 중립?�서 ?�욕 구간?�로 ?�동?�습?�다.',
+      '?�계 ?�문가?�의 긍정???�망??증�??�고 ?�으�? ?�?�멘??분석?�서??강세�?보이�??�습?�다.',
+      '?�장 변?�성??감소?�면???�자???�뢰?��? ?�복?�고 ?�으�? 리스?�온 모드�??�환?�고 ?�습?�다.',
     ],
     PATTERN: [
-      '과거 유사한 패턴에서 70% 확률로 상승 전환이 발생했으며, 현재 동일한 조건이 형성되고 있습니다.',
-      '계절적 패턴 분석 결과 이 시기에 강세를 보이는 경향이 있으며, 역사적 데이터가 이를 뒷받침합니다.',
-      '시장 사이클 분석에 따르면 현재 축적 단계에서 상승 단계로 전환되는 시점입니다.',
-      '상관관계 분석 결과 연관 자산들의 움직임이 긍정적 신호를 보이고 있습니다.',
+      '과거 ?�사???�턴?�서 70% ?�률�??�승 ?�환??발생?�으�? ?�재 ?�일??조건???�성?�고 ?�습?�다.',
+      '계절???�턴 분석 결과 ???�기??강세�?보이??경향???�으�? ??��???�이?��? ?��? ?�받침합?�다.',
+      '?�장 ?�이??분석???�르�??�재 축적 ?�계?�서 ?�승 ?�계�??�환?�는 ?�점?�니??',
+      '?��?관�?분석 결과 ?��? ?�산?�의 ?�직임??긍정???�호�?보이�??�습?�다.',
     ]
   }
 
@@ -154,7 +154,7 @@ function generateSampleAnalyses(category: string, type: string, limit: number) {
       confidence,
       reasoning,
       indicators: indicators[type as keyof typeof indicators] || indicators.TECHNICAL,
-      created_at: new Date(Date.now() - Math.random() * 86400000 * 7).toISOString(), // 지난 7일 내
+      created_at: new Date(Date.now() - Math.random() * 86400000 * 7).toISOString(), // 지??7????
       asset: {
         ...asset,
         asset_type: asset.symbol.includes('-USD') ? 'CRYPTO' : 'STOCK',
@@ -166,7 +166,7 @@ function generateSampleAnalyses(category: string, type: string, limit: number) {
         market_category: {
           id: 1,
           code: asset.symbol.includes('-USD') ? 'CRYPTO' : 'US',
-          name_ko: asset.symbol.includes('-USD') ? '암호화폐' : '미국',
+          name_ko: asset.symbol.includes('-USD') ? '?�호?�폐' : '미국',
           name_en: asset.symbol.includes('-USD') ? 'Cryptocurrency' : 'United States',
           is_active: true,
           created_at: new Date().toISOString(),
@@ -178,4 +178,5 @@ function generateSampleAnalyses(category: string, type: string, limit: number) {
   return analyses
 }
 
-export const runtime = 'edge'
+// Edge runtime 제거 - Supabase 호환성을 위해
+// export const runtime = 'edge'

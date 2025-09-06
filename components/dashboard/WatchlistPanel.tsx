@@ -68,9 +68,9 @@ const WatchlistPanel = ({ watchlist }: WatchlistPanelProps) => {
               {formatPrice(asset.current_price?.price || 0, asset.currency)}
             </div>
             <div className={`text-xs font-medium ${
-              getChangeColor(asset.current_price?.change_percent)
+              getChangeColor(asset.current_price?.change_percent || null)
             }`}>
-              {formatChange(asset.current_price?.change_percent)}
+              {formatChange(asset.current_price?.change_percent || null)}
             </div>
           </div>
         </Link>

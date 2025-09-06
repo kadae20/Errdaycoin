@@ -1,12 +1,44 @@
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { Database } from '@/lib/types/database'
 
+// Client-side Supabase client (for use in components)
 export const createClient = () => createClientComponentClient<Database>()
 
-// Also export a direct client for non-component usage
+// Direct Supabase client (for use outside of components)
 export const createDirectClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
   
-  return createClientComponentClient<Database>()
+  // 환경 변수가 설정되지 않은 경우 에러 처리
+  if (supabaseUrl === 'your_supabase_project_url' || 
+      supabaseAnonKey === 'your_supabase_anon_key' ||
+      supabaseUrl === 'https://placeholder.supabase.co') {
+    console.warn('Supabase environment variables are not properly configured')
+    // 빌드 시에는 placeholder client 반환
+    return createSupabaseClient<Database>(
+      'https://placeholder.supabase.co', 
+      'placeholder-key'
+    )
+  }
+  
+  return createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  })
+}
+
+// Supabase 설정 상태 확인 유틸리티
+export const isSupabaseConfigured = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  
+  return !!(supabaseUrl && supabaseAnonKey && 
+           supabaseUrl !== 'your_supabase_project_url' && 
+           supabaseAnonKey !== 'your_supabase_anon_key' &&
+           supabaseUrl !== 'https://placeholder.supabase.co' &&
+           supabaseAnonKey !== 'placeholder-key')
 }

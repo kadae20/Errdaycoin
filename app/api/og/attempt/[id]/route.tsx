@@ -38,10 +38,10 @@ export async function GET(
       return new Response('Attempt not found', { status: 404 })
     }
 
-    // Calculate percentile (simplified - in real app you'd calculate this properly)
-    const percentile = attempt.is_correct 
-      ? Math.min(95, Math.max(60, 75 + (attempt.score - 100) / 10))
-      : Math.min(40, Math.max(5, 25 - (100 - attempt.score) / 10))
+        // Calculate percentile (simplified - in real app you'd calculate this properly)
+    const percentile = (attempt as any).is_correct
+      ? Math.min(95, Math.max(60, 75 + ((attempt as any).score - 100) / 10))
+      : Math.min(40, Math.max(5, 25 - (100 - (attempt as any).score) / 10))
 
     return new ImageResponse(
       (
@@ -91,7 +91,7 @@ export async function GET(
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                backgroundColor: attempt.is_correct ? '#10b981' : '#ef4444',
+                backgroundColor: (attempt as any).is_correct ? '#10b981' : '#ef4444',
                 color: 'white',
                 padding: '20px 40px',
                 borderRadius: '50px',
@@ -101,10 +101,10 @@ export async function GET(
               }}
             >
               <div style={{ marginRight: '12px', fontSize: '32px' }}>
-                {attempt.is_correct ? '✅' : '❌'}
+                {(attempt as any).is_correct ? '✅' : '❌'}
               </div>
               <div>
-                {attempt.is_correct ? 'Correct!' : 'Wrong'}
+                {(attempt as any).is_correct ? 'Correct!' : 'Wrong'}
               </div>
             </div>
 
@@ -117,7 +117,7 @@ export async function GET(
                 marginBottom: '20px',
               }}
             >
-              {attempt.score}
+              {(attempt as any).score}
             </div>
             <div
               style={{
@@ -141,13 +141,13 @@ export async function GET(
             >
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontWeight: 'bold', color: '#1f2937' }}>
-                  {attempt.quiz_bank.symbol}
+                  {(attempt as any).quiz_bank.symbol}
                 </div>
                 <div>Symbol</div>
               </div>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontWeight: 'bold', color: '#1f2937' }}>
-                  {attempt.choice}
+                  {(attempt as any).choice}
                 </div>
                 <div>Your Choice</div>
               </div>

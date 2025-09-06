@@ -4,8 +4,8 @@ import { Database } from '@/lib/types/database'
 import { DashboardData } from '@/lib/types/market'
 
 const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-key'
 )
 
 export async function GET(request: NextRequest) {
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category') || 'ALL'
 
-    // 시장 개요 데이터 생성 (실제로는 외부 API에서 가져와야 함)
+    // ?�장 개요 ?�이???�성 (?�제로는 ?��? API?�서 가?��?????
     const marketOverview = {
       totalMarketCap: 2.5e12, // $2.5T
       totalVolume24h: 95e9,   // $95B
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       activeAssets: 1247,
     }
 
-    // 인기 종목 가져오기 (시장 카테고리 필터링)
+    // ?�기 종목 가?�오�?(?�장 카테고리 ?�터�?
     let assetsQuery = supabase
       .from('asset')
       .select(`
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
         .single()
 
       if (categoryData) {
-        assetsQuery = assetsQuery.eq('market_category_id', categoryData.id)
+        assetsQuery = assetsQuery.eq('market_category_id', (categoryData as any).id)
       }
     }
 
@@ -49,26 +49,27 @@ export async function GET(request: NextRequest) {
       console.error('Assets query error:', assetsError)
     }
 
-    // 각 자산에 대한 가격 정보 가져오기 (실제로는 실시간 API에서)
-    const assetsWithPrices = (assets || []).map(asset => {
-      // 샘플 가격 데이터 생성
-      const basePrice = asset.symbol.includes('BTC') ? 45000 : 
-                       asset.symbol.includes('ETH') ? 3000 :
-                       asset.symbol === 'AAPL' ? 180 :
-                       asset.symbol === 'TSLA' ? 250 :
-                       asset.symbol === 'NVDA' ? 500 :
-                       asset.symbol === 'MSFT' ? 380 :
-                       asset.symbol === 'GOOGL' ? 2800 :
-                       asset.symbol === 'AMZN' ? 3200 :
-                       asset.symbol === 'META' ? 320 : 100
+    // �??�산???�??가�??�보 가?�오�?(?�제로는 ?�시�?API?�서)
+        const assetsWithPrices = (assets || []).map(asset => {
+      const assetData = asset as any
+      // ?�플 가�??�이???�성
+      const basePrice = assetData.symbol.includes('BTC') ? 45000 :
+                       assetData.symbol.includes('ETH') ? 3000 :
+                       assetData.symbol === 'AAPL' ? 180 :
+                       assetData.symbol === 'TSLA' ? 250 :
+                       assetData.symbol === 'NVDA' ? 500 :
+                       assetData.symbol === 'MSFT' ? 380 :
+                       assetData.symbol === 'GOOGL' ? 2800 :
+                       assetData.symbol === 'AMZN' ? 3200 :
+                       assetData.symbol === 'META' ? 320 : 100
 
       const changePercent = (Math.random() - 0.5) * 10 // -5% to +5%
       
       return {
-        ...asset,
+        ...assetData,
         current_price: {
           id: 1,
-          asset_id: asset.id,
+          asset_id: assetData.id,
           price: basePrice,
           change_amount: basePrice * (changePercent / 100),
           change_percent: changePercent,
@@ -82,11 +83,11 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // 상승률 순으로 정렬
+    // ?�승�??�으�??�렬
     const topMovers = assetsWithPrices
       .sort((a, b) => (b.current_price?.change_percent || 0) - (a.current_price?.change_percent || 0))
 
-    // 사용자 관심종목 (인증된 사용자의 경우)
+    // ?�용??관?�종�?(?�증???�용?�의 경우)
     let userWatchlist: any[] = []
     const authHeader = request.headers.get('authorization')
     
@@ -106,8 +107,8 @@ export async function GET(request: NextRequest) {
             .limit(10)
 
           userWatchlist = (watchlist || []).map(item => ({
-            ...item.asset,
-            current_price: topMovers.find(a => a.id === item.asset.id)?.current_price || null
+            ...(item as any).asset,
+            current_price: topMovers.find(a => a.id === (item as any).asset.id)?.current_price || null
           }))
         }
       } catch (error) {
@@ -115,7 +116,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 최근 커뮤니티 게시글
+    // 최근 커�??�티 게시글
     const { data: recentPosts } = await supabase
       .from('community_post')
       .select(`
@@ -127,10 +128,10 @@ export async function GET(request: NextRequest) {
       .limit(5)
 
     const postsWithAuthor = (recentPosts || []).map(post => ({
-      ...post,
+      ...(post as any),
       author: {
-        id: post.author?.id || '',
-        handle: post.author?.handle || null
+        id: (post as any).author?.id || '',
+        handle: (post as any).author?.handle || null
       }
     }))
 
@@ -156,4 +157,5 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export const runtime = 'edge'
+// Edge runtime 제거 - Supabase 호환성을 위해
+// export const runtime = 'edge'

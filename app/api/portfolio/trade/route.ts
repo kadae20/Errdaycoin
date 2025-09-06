@@ -4,8 +4,8 @@ import { ExecuteTradeRequestSchema } from '@/lib/types/market'
 import { Database } from '@/lib/types/database'
 
 const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
+  process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key"
 )
 
 export async function POST(request: NextRequest) {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { portfolioId, assetId, type, quantity, price } = ExecuteTradeRequestSchema.parse(body)
 
-    // 포트폴리오 소유권 확인
+    // 포트폴리오 소유자 확인
     const { data: portfolio, error: portfolioError } = await supabase
       .from('user_portfolio')
       .select('*')
@@ -66,14 +66,14 @@ export async function POST(request: NextRequest) {
 
     // 매도의 경우 보유 수량 확인
     if (type === 'SELL') {
-      const { data: holding } = await supabase
+      const { data: holding, error: holdingError } = await supabase
         .from('portfolio_holding')
         .select('quantity')
         .eq('portfolio_id', portfolioId)
         .eq('asset_id', assetId)
         .single()
 
-      if (!holding || holding.quantity < quantity) {
+      if (holdingError || !holding || (holding as any).quantity < quantity) {
         return NextResponse.json(
           { error: '보유 수량이 부족합니다' },
           { status: 400 }
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 거래 내역 저장
+    // 거래 내역 기록
     const { error: transactionError } = await supabase
       .from('transaction_history')
       .insert({
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
         price,
         total_amount: totalAmount,
         fee,
-      })
+      } as any)
 
     if (transactionError) {
       console.error('Transaction insert error:', transactionError)
@@ -113,12 +113,12 @@ export async function POST(request: NextRequest) {
 
     if (type === 'BUY') {
       if (existingHolding) {
-        // 기존 보유 종목에 추가
-        const newQuantity = existingHolding.quantity + quantity
-        const newTotalInvested = existingHolding.total_invested + totalAmount
+        // 기존 보유 종목 추가
+        const newQuantity = (existingHolding as any).quantity + quantity
+        const newTotalInvested = (existingHolding as any).total_invested + totalAmount
         const newAvgPrice = newTotalInvested / newQuantity
 
-        await supabase
+        await (supabase as any)
           .from('portfolio_holding')
           .update({
             quantity: newQuantity,
@@ -126,10 +126,10 @@ export async function POST(request: NextRequest) {
             total_invested: newTotalInvested,
             last_updated: new Date().toISOString(),
           })
-          .eq('id', existingHolding.id)
+          .eq('id', (existingHolding as any).id)
       } else {
         // 새로운 보유 종목 추가
-        await supabase
+        await (supabase as any)
           .from('portfolio_holding')
           .insert({
             portfolio_id: portfolioId,
@@ -141,27 +141,27 @@ export async function POST(request: NextRequest) {
       }
     } else { // SELL
       if (existingHolding) {
-        const newQuantity = existingHolding.quantity - quantity
+        const newQuantity = (existingHolding as any).quantity - quantity
         
         if (newQuantity <= 0) {
           // 모든 수량 매도 - 보유 종목 삭제
           await supabase
             .from('portfolio_holding')
             .delete()
-            .eq('id', existingHolding.id)
+            .eq('id', (existingHolding as any).id)
         } else {
           // 일부 매도 - 수량 업데이트
-          const soldRatio = quantity / existingHolding.quantity
-          const newTotalInvested = existingHolding.total_invested * (1 - soldRatio)
+          const soldRatio = quantity / (existingHolding as any).quantity
+          const newTotalInvested = (existingHolding as any).total_invested * (1 - soldRatio)
 
-          await supabase
+          await (supabase as any)
             .from('portfolio_holding')
             .update({
               quantity: newQuantity,
               total_invested: newTotalInvested,
               last_updated: new Date().toISOString(),
             })
-            .eq('id', existingHolding.id)
+            .eq('id', (existingHolding as any).id)
         }
       }
     }
@@ -180,4 +180,5 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export const runtime = 'edge'
+// Edge runtime 제거 - Supabase 호환성을 위해
+// export const runtime = 'edge'

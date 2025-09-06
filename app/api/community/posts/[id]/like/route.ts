@@ -62,7 +62,7 @@ export async function POST(
       .insert({
         user_id: user.id,
         post_id: postId,
-      })
+      } as any)
 
     if (likeError) {
       console.error('Like insert error:', likeError)
@@ -73,7 +73,7 @@ export async function POST(
     }
 
     // 게시글 좋아요 수 업데이트
-    await supabase.rpc('increment_post_like_count', { post_id: postId })
+    await supabase.rpc('increment_post_like_count', { post_id: postId } as any)
 
     return NextResponse.json({ success: true })
 
@@ -136,7 +136,7 @@ export async function DELETE(
     }
 
     // 게시글 좋아요 수 업데이트
-    await supabase.rpc('decrement_post_like_count', { post_id: postId })
+    await supabase.rpc('decrement_post_like_count', { post_id: postId } as any)
 
     return NextResponse.json({ success: true })
 

@@ -229,7 +229,7 @@ export interface AssetWithPrice extends Asset {
 
 export interface HoldingWithAsset extends Holding {
   asset: Asset
-  current_price?: MarketPrice
+  current_price?: MarketPrice | null
 }
 
 export interface PostWithAuthor extends CommunityPost {

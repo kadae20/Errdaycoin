@@ -74,7 +74,7 @@ const ChartPreview = ({
           close: candle.c,
         }))
 
-        candlestickSeries.setData(chartData)
+        candlestickSeries.setData(chartData as any)
 
         // Fit content
         chart.timeScale().fitContent()
@@ -129,7 +129,7 @@ const ChartPreview = ({
         close: candle.c,
       }))
 
-      series.setData(chartData)
+      series.setData(chartData as any)
       
       // Fit content to show all data
       setTimeout(() => {

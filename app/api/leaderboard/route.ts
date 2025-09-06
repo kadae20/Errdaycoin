@@ -4,8 +4,8 @@ import { GetLeaderboardRequestSchema, GetLeaderboardResponseSchema } from '@/lib
 import { Database } from '@/lib/types/database'
 
 const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
+  process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key"
 )
 
 export async function GET(request: NextRequest) {
@@ -34,11 +34,11 @@ export async function GET(request: NextRequest) {
 
     // Transform data to match API schema
     const transformedData = (leaderboard || []).map(entry => ({
-      rank: entry.rank,
-      handleOrAnon: entry.handle_or_anon,
-      scoreSum: entry.score_sum,
-      correctRate: entry.correct_rate,
-      attempts: entry.attempts,
+      rank: (entry as any).rank,
+      handleOrAnon: (entry as any).handle_or_anon,
+      scoreSum: (entry as any).score_sum,
+      correctRate: (entry as any).correct_rate,
+      attempts: (entry as any).attempts,
     }))
 
     const response = GetLeaderboardResponseSchema.parse(transformedData)

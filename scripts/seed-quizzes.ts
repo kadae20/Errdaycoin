@@ -125,7 +125,7 @@ async function insertQuizSegments(segments: any[]): Promise<void> {
     const batch = segments.slice(i, i + batchSize)
     
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('quiz_bank')
         .insert(
           batch.map(segment => ({
@@ -162,7 +162,7 @@ async function insertQuizSegments(segments: any[]): Promise<void> {
 async function cleanExistingData(): Promise<void> {
   console.log('Cleaning existing quiz data...')
   
-  const { error } = await supabase
+        const { error } = await (supabase as any)
     .from('quiz_bank')
     .delete()
     .neq('id', 0) // Delete all rows
@@ -206,7 +206,7 @@ async function displayStatistics(): Promise<void> {
   }
   
   // Count by symbol
-  const { data: symbols, error: symbolError } = await supabase
+  const { data: symbols, error: symbolError } = await (supabase as any)
     .from('quiz_bank')
     .select('symbol')
     .group('symbol')

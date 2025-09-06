@@ -65,10 +65,23 @@ export default function ResultPage() {
           return
         }
 
-        setAttempt({
-          ...data,
-          quiz: data.quiz_bank,
-        } as AttemptData)
+        const quizData = Array.isArray(data.quiz_bank) ? data.quiz_bank[0] : data.quiz_bank
+        const attemptData: AttemptData = {
+          id: data.id,
+          choice: data.choice,
+          is_correct: data.is_correct,
+          score: data.score,
+          took_ms: data.took_ms,
+          created_at: data.created_at,
+          quiz: {
+            symbol: quizData.symbol,
+            timeframe: quizData.timeframe,
+            preview_candles: quizData.preview_candles,
+            answer_candles: quizData.answer_candles,
+            answer: quizData.answer,
+          }
+        }
+        setAttempt(attemptData)
 
         analytics.page({ 
           path: `/result/${attemptId}`, 

@@ -5,8 +5,8 @@ import { rateLimit, getClientIP } from '@/lib/utils/rate-limit'
 import { Database } from '@/lib/types/database'
 
 const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
+  process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key"
 )
 
 export async function GET(request: NextRequest) {
@@ -70,11 +70,11 @@ export async function GET(request: NextRequest) {
 
     const response = GetQuizResponseSchema.parse({
       quiz: {
-        id: randomQuiz.id,
-        symbol: randomQuiz.symbol,
-        timeframe: randomQuiz.timeframe,
-        preview: randomQuiz.preview_candles,
-        difficulty: randomQuiz.difficulty,
+        id: (randomQuiz as any).id,
+        symbol: (randomQuiz as any).symbol,
+        timeframe: (randomQuiz as any).timeframe,
+        preview: (randomQuiz as any).preview_candles,
+        difficulty: (randomQuiz as any).difficulty,
       },
     })
 

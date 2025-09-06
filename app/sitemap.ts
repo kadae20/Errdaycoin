@@ -27,14 +27,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
         lastModified: new Date(),
         changeFrequency: route === '' || route === '/dashboard' ? 'daily' : 'weekly',
         priority: route === '' ? 1.0 : route === '/play' ? 0.9 : 0.8,
-        alternates: {
-          languages: Object.fromEntries(
-            languages.map(l => [
-              l,
-              `${baseUrl}${l === 'en' ? '' : `/${l}`}${route}`
-            ])
-          )
-        }
       })
     })
   })

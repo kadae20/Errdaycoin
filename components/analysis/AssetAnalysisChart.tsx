@@ -106,14 +106,14 @@ const AssetAnalysisChart = ({ asset }: AssetAnalysisChartProps) => {
         // 샘플 데이터 생성
         const { candleData, ma20Data, ma50Data, volumeData } = generateAnalysisData(asset.symbol, timeframe)
         
-        candlestickSeries.setData(candleData)
-        ma20Series.setData(ma20Data)
-        ma50Series.setData(ma50Data)
-        volumeSeries.setData(volumeData)
+        candlestickSeries.setData(candleData as any)
+        ma20Series.setData(ma20Data as any)
+        ma50Series.setData(ma50Data as any)
+        volumeSeries.setData(volumeData as any)
 
         // AI 분석 마커 추가
         const markers = generateAnalysisMarkers(candleData)
-        candlestickSeries.setMarkers(markers)
+        candlestickSeries.setMarkers(markers as any)
 
         chart.timeScale().fitContent()
 

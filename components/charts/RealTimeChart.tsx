@@ -118,8 +118,8 @@ const RealTimeChart = ({
           color: candle.close >= candle.open ? '#10b981' : '#ef4444',
         }))
 
-        candlestickSeries.setData(candleData)
-        volumeSeries.setData(volumeData)
+        candlestickSeries.setData(candleData as any)
+        volumeSeries.setData(volumeData as any)
 
         // 현재 가격 설정
         if (historicalData.length > 0) {

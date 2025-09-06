@@ -2,13 +2,18 @@ import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import { SupportedLanguages } from '@/lib/types'
 
-// Import translations
-import en from './locales/en.json'
-import ko from './locales/ko.json'
-
+// 임시로 영어만 사용 - JSON 파싱 에러 방지
 const resources = {
-  en: { common: en },
-  ko: { common: ko },
+  en: { 
+    common: {
+      site_name: "Errdaycoin",
+      tagline: "Master Trading with Chart Games",
+      welcome: "Welcome to Errdaycoin",
+      start_quiz: "Start Quiz",
+      leaderboard: "Leaderboard",
+      dashboard: "Dashboard"
+    }
+  },
 }
 
 i18n

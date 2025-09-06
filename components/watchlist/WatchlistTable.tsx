@@ -130,14 +130,14 @@ const WatchlistTable = ({ watchlist, onRemove, isRemoving }: WatchlistTableProps
                 
                 <td className="py-4 px-6 text-right">
                   <div className={`inline-flex items-center px-2 py-1 rounded-full text-sm font-medium ${
-                    getChangeBgColor(item.price?.change_percent)
-                  } ${getChangeColor(item.price?.change_percent)}`}>
-                    {formatChange(item.price?.change_percent)}
+                    getChangeBgColor(item.price?.change_percent || null)
+                  } ${getChangeColor(item.price?.change_percent || null)}`}>
+                    {formatChange(item.price?.change_percent || null)}
                   </div>
                 </td>
                 
                 <td className="py-4 px-6 text-right text-gray-600">
-                  {formatVolume(item.price?.volume)}
+                  {formatVolume(item.price?.volume || null)}
                 </td>
                 
                 <td className="py-4 px-6 text-right text-gray-600">
@@ -203,15 +203,15 @@ const WatchlistTable = ({ watchlist, onRemove, isRemoving }: WatchlistTableProps
               
               <div>
                 <div className="text-gray-500 mb-1">변동률</div>
-                <div className={`font-semibold ${getChangeColor(item.price?.change_percent)}`}>
-                  {formatChange(item.price?.change_percent)}
+                <div className={`font-semibold ${getChangeColor(item.price?.change_percent || null)}`}>
+                  {formatChange(item.price?.change_percent || null)}
                 </div>
               </div>
               
               <div>
                 <div className="text-gray-500 mb-1">거래량</div>
                 <div className="text-gray-600">
-                  {formatVolume(item.price?.volume)}
+                  {formatVolume(item.price?.volume || 0)}
                 </div>
               </div>
               
