@@ -25,22 +25,35 @@ export default function ClientProviders({
   useEffect(() => {
     // Initialize i18n with browser language detection
     const initI18n = async () => {
-      // Check for stored language preference
-      const storedLang = localStorage.getItem('preferred-language')
-      
-      // Detect browser language
-      const browserLang = navigator.language.split('-')[0]
-      const supportedLangs = ['ko', 'en', 'es', 'ja']
-      
-      // Use stored preference, then browser language, then default
-      const targetLang = storedLang || 
-        (supportedLangs.includes(browserLang) ? browserLang : 'ko')
-      
-      if (i18n.language !== targetLang) {
-        await i18n.changeLanguage(targetLang)
+      try {
+        // Check for stored language preference (only in browser)
+        const storedLang = typeof window !== 'undefined' 
+          ? localStorage.getItem('preferred-language') 
+          : null
+        
+        // Detect browser language (only in browser)
+        const browserLang = typeof window !== 'undefined' && navigator?.language
+          ? navigator.language.split('-')[0]
+          : 'ko'
+        
+        const supportedLangs = ['ko', 'en', 'es', 'ja']
+        
+        // Use stored preference, then browser language, then default
+        const targetLang = storedLang || 
+          (supportedLangs.includes(browserLang) ? browserLang : 'ko')
+        
+        if (i18n.language !== targetLang) {
+          await i18n.changeLanguage(targetLang)
+        }
+      } catch (error) {
+        console.warn('Error initializing i18n:', error)
+        // Fallback to default language
+        if (i18n.language !== 'ko') {
+          await i18n.changeLanguage('ko')
+        }
+      } finally {
+        setIsI18nReady(true)
       }
-      
-      setIsI18nReady(true)
     }
 
     initI18n()

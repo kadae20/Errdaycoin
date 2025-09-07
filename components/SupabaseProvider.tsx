@@ -32,6 +32,8 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
         setUser(currentUser)
       } catch (error) {
         console.error('Error checking user:', error)
+        // 에러가 발생해도 계속 진행
+        setUser(null)
       } finally {
         setLoading(false)
       }
@@ -39,21 +41,37 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
 
     checkUser()
 
-    // 인증 상태 변경 리스너
-    const { data: { subscription } } = authHelpers.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          const currentUser = await authHelpers.getCurrentUser()
-          setUser(currentUser)
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null)
+    // 인증 상태 변경 리스너 (에러 처리 추가)
+    try {
+      const { data: { subscription } } = authHelpers.onAuthStateChange(
+        async (event, session) => {
+          try {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+              const currentUser = await authHelpers.getCurrentUser()
+              setUser(currentUser)
+            } else if (event === 'SIGNED_OUT') {
+              setUser(null)
+            }
+          } catch (error) {
+            console.error('Error in auth state change:', error)
+            setUser(null)
+          } finally {
+            setLoading(false)
+          }
         }
-        setLoading(false)
-      }
-    )
+      )
 
-    return () => {
-      subscription.unsubscribe()
+      return () => {
+        try {
+          subscription.unsubscribe()
+        } catch (error) {
+          console.error('Error unsubscribing:', error)
+        }
+      }
+    } catch (error) {
+      console.error('Error setting up auth listener:', error)
+      setLoading(false)
+      return
     }
   }, [isConfigured])
 
