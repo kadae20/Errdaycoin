@@ -56,7 +56,7 @@ const TRADING_PAIRS = [
   { id: 'COIN_T', volatility: 0.48 }
 ]
 
-export default function FuturesGame() {
+export default function FuturesGameNew() {
   // Auto-start game with random coin
   const getRandomPair = () => TRADING_PAIRS[Math.floor(Math.random() * TRADING_PAIRS.length)]
   
