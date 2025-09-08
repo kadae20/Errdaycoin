@@ -257,11 +257,17 @@ export default function FuturesGame() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
+    // Set canvas size
+    const rect = canvas.getBoundingClientRect()
+    canvas.width = rect.width * window.devicePixelRatio || 800
+    canvas.height = rect.height * window.devicePixelRatio || 400
+    ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1)
+
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     const padding = 40
-    const chartWidth = canvas.width - padding * 2
-    const chartHeight = canvas.height - padding * 2
+    const chartWidth = (rect.width || 800) - padding * 2
+    const chartHeight = (rect.height || 400) - padding * 2
     
     // Show last 20 candles
     const startIndex = Math.max(0, gameState.currentCandleIndex - 19)
@@ -285,7 +291,7 @@ export default function FuturesGame() {
       const y = padding + (chartHeight / 5) * i
       ctx.beginPath()
       ctx.moveTo(padding, y)
-      ctx.lineTo(canvas.width - padding, y)
+      ctx.lineTo(rect.width - padding, y)
       ctx.stroke()
     }
 
@@ -329,7 +335,7 @@ export default function FuturesGame() {
       ctx.setLineDash([5, 5])
       ctx.beginPath()
       ctx.moveTo(padding, entryY)
-      ctx.lineTo(canvas.width - padding, entryY)
+      ctx.lineTo(rect.width - padding, entryY)
       ctx.stroke()
       ctx.setLineDash([])
       
@@ -340,7 +346,7 @@ export default function FuturesGame() {
       ctx.setLineDash([3, 3])
       ctx.beginPath()
       ctx.moveTo(padding, liqY)
-      ctx.lineTo(canvas.width - padding, liqY)
+      ctx.lineTo(rect.width - padding, liqY)
       ctx.stroke()
       ctx.setLineDash([])
     }
@@ -349,9 +355,9 @@ export default function FuturesGame() {
     ctx.fillStyle = '#fff'
     ctx.font = '12px monospace'
     const currentPrice = visibleCandles[visibleCandles.length - 1]?.close || 0
-    ctx.fillText(`$${currentPrice.toLocaleString()}`, canvas.width - padding - 100, 30)
+    ctx.fillText(`$${currentPrice.toLocaleString()}`, rect.width - padding - 100, 30)
 
-  }, [gameState.historicalData, gameState.currentCandleIndex, gameState.position])
+  }, [gameState.historicalData, gameState.currentCandleIndex, gameState.position, gameState.gameActive])
 
   const currentCandle = gameState.historicalData[gameState.currentCandleIndex]
   const selectedPairData = TRADING_PAIRS.find(p => p.id === gameState.selectedPair)!
@@ -426,9 +432,8 @@ export default function FuturesGame() {
               
               <canvas
                 ref={canvasRef}
-                width={800}
-                height={400}
                 className="w-full bg-gray-900 rounded"
+                style={{ width: '100%', height: '400px' }}
               />
               
               <div className="flex items-center justify-between mt-4">
