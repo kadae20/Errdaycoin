@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useAuth } from './providers'
 import AuthModal from '@/components/AuthModal'
-import TradingGame from '@/components/TradingGame'
+import FuturesGame from '@/components/FuturesGame'
 
 export default function HomePage() {
   const { user, logout } = useAuth()
@@ -31,7 +31,7 @@ export default function HomePage() {
           </div>
         </div>
         
-        <TradingGame />
+        <FuturesGame />
       </div>
     )
   }
@@ -72,11 +72,11 @@ export default function HomePage() {
         <div className="text-center max-w-4xl mx-auto">
           <h2 className="text-6xl font-bold text-white mb-8">
             Master the Art of
-            <span className="text-green-400 block">Crypto Trading</span>
+            <span className="text-green-400 block">Futures Trading</span>
           </h2>
           <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Experience real-time Bitcoin trading with our advanced prediction game. 
-            Test your skills, compete with others, and learn market dynamics risk-free.
+            Experience leveraged crypto futures trading with historical data. 
+            Use tokens to advance time, manage risk, and avoid liquidation!
           </p>
           
           <button
@@ -89,7 +89,7 @@ export default function HomePage() {
 
           {/* Demo Chart Preview */}
           <div className="bg-gray-800 rounded-xl p-8 mb-16">
-            <h3 className="text-2xl font-semibold mb-6 text-green-400">Live Bitcoin Chart</h3>
+            <h3 className="text-2xl font-semibold mb-6 text-green-400">Futures Trading Chart</h3>
             <div className="bg-gray-900 rounded-lg p-6 relative overflow-hidden">
               {/* Simulated chart lines */}
               <div className="h-64 flex items-end justify-between gap-1">
@@ -120,29 +120,29 @@ export default function HomePage() {
           {/* Features */}
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-gray-800 p-8 rounded-xl border border-gray-700">
-              <div className="text-4xl mb-4">⚡</div>
-              <h3 className="text-xl font-semibold mb-4 text-green-400">Real-Time Data</h3>
+              <div className="text-4xl mb-4">📈</div>
+              <h3 className="text-xl font-semibold mb-4 text-green-400">Leverage Trading</h3>
               <p className="text-gray-300">
-                Experience authentic market movements with live Bitcoin price feeds 
-                and realistic volatility patterns.
+                Trade with up to 50x leverage on Bitcoin and altcoins. 
+                Experience the thrill of futures trading with risk management.
               </p>
             </div>
             
             <div className="bg-gray-800 p-8 rounded-xl border border-gray-700">
-              <div className="text-4xl mb-4">🎯</div>
-              <h3 className="text-xl font-semibold mb-4 text-green-400">Prediction Game</h3>
+              <div className="text-4xl mb-4">🪙</div>
+              <h3 className="text-xl font-semibold mb-4 text-green-400">Token System</h3>
               <p className="text-gray-300">
-                Make UP/DOWN predictions on Bitcoin price movements. 
-                Test your market intuition in 30-second rounds.
+                Use game tokens to advance through historical candles. 
+                Plan your moves strategically and time the market perfectly.
               </p>
             </div>
             
             <div className="bg-gray-800 p-8 rounded-xl border border-gray-700">
-              <div className="text-4xl mb-4">🏆</div>
-              <h3 className="text-xl font-semibold mb-4 text-green-400">Compete & Learn</h3>
+              <div className="text-4xl mb-4">💥</div>
+              <h3 className="text-xl font-semibold mb-4 text-green-400">Avoid Liquidation</h3>
               <p className="text-gray-300">
-                Build your trading score, compete on leaderboards, 
-                and master market analysis without financial risk.
+                Manage your positions carefully to avoid liquidation. 
+                Choose from various altcoins with different difficulty levels.
               </p>
             </div>
           </div>
