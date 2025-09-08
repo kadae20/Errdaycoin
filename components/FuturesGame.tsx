@@ -26,22 +26,34 @@ interface GameState {
   tokens: number // Game coins for advancing candles
   currentCandleIndex: number
   position: Position
-  selectedCoin: string
+  selectedPair: string
   leverage: number
   gameActive: boolean
   historicalData: CandleData[]
 }
 
-// Sample altcoins with different volatility levels
-const ALTCOINS = [
-  { symbol: 'BTC', name: 'Bitcoin', difficulty: 'Easy', volatility: 0.05 },
-  { symbol: 'ETH', name: 'Ethereum', difficulty: 'Easy', volatility: 0.06 },
-  { symbol: 'DOGE', name: 'Dogecoin', difficulty: 'Hard', volatility: 0.15 },
-  { symbol: 'SHIB', name: 'Shiba Inu', difficulty: 'Extreme', volatility: 0.25 },
-  { symbol: 'PEPE', name: 'Pepe', difficulty: 'Extreme', volatility: 0.30 },
-  { symbol: 'ADA', name: 'Cardano', difficulty: 'Medium', volatility: 0.08 },
-  { symbol: 'SOL', name: 'Solana', difficulty: 'Medium', volatility: 0.10 },
-  { symbol: 'MATIC', name: 'Polygon', difficulty: 'Medium', volatility: 0.09 }
+// Binance coins with hidden names (anti-cheating)
+const TRADING_PAIRS = [
+  { id: 'COIN_A', volatility: 0.05 },
+  { id: 'COIN_B', volatility: 0.06 },
+  { id: 'COIN_C', volatility: 0.08 },
+  { id: 'COIN_D', volatility: 0.09 },
+  { id: 'COIN_E', volatility: 0.10 },
+  { id: 'COIN_F', volatility: 0.12 },
+  { id: 'COIN_G', volatility: 0.15 },
+  { id: 'COIN_H', volatility: 0.18 },
+  { id: 'COIN_I', volatility: 0.20 },
+  { id: 'COIN_J', volatility: 0.22 },
+  { id: 'COIN_K', volatility: 0.25 },
+  { id: 'COIN_L', volatility: 0.28 },
+  { id: 'COIN_M', volatility: 0.30 },
+  { id: 'COIN_N', volatility: 0.32 },
+  { id: 'COIN_O', volatility: 0.35 },
+  { id: 'COIN_P', volatility: 0.38 },
+  { id: 'COIN_Q', volatility: 0.40 },
+  { id: 'COIN_R', volatility: 0.42 },
+  { id: 'COIN_S', volatility: 0.45 },
+  { id: 'COIN_T', volatility: 0.48 }
 ]
 
 export default function FuturesGame() {
@@ -58,18 +70,18 @@ export default function FuturesGame() {
       liquidationPrice: 0,
       unrealizedPnl: 0
     },
-    selectedCoin: 'BTC',
+    selectedPair: 'COIN_A',
     leverage: 10,
     gameActive: false,
     historicalData: []
   })
 
   const [tradeAmount, setTradeAmount] = useState(100)
-  const [showCoinSelector, setShowCoinSelector] = useState(false)
+  const [showPairSelector, setShowPairSelector] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   // Generate historical candlestick data
-  const generateHistoricalData = (coin: typeof ALTCOINS[0], days: number = 30): CandleData[] => {
+  const generateHistoricalData = (pair: typeof TRADING_PAIRS[0], days: number = 50): CandleData[] => {
     const data: CandleData[] = []
     let basePrice = Math.random() * 50000 + 10000 // Random base price
     const now = Date.now()
@@ -79,7 +91,7 @@ export default function FuturesGame() {
       const open = basePrice
       
       // Generate realistic OHLC data with volatility
-      const dailyChange = (Math.random() - 0.5) * coin.volatility
+      const dailyChange = (Math.random() - 0.5) * pair.volatility
       const high = open * (1 + Math.abs(dailyChange) * Math.random())
       const low = open * (1 - Math.abs(dailyChange) * Math.random())
       const close = open * (1 + dailyChange)
@@ -101,8 +113,8 @@ export default function FuturesGame() {
 
   // Start new game
   const startNewGame = () => {
-    const selectedCoinData = ALTCOINS.find(c => c.symbol === gameState.selectedCoin)!
-    const historicalData = generateHistoricalData(selectedCoinData, 50)
+    const selectedPairData = TRADING_PAIRS.find(p => p.id === gameState.selectedPair)!
+    const historicalData = generateHistoricalData(selectedPairData, 50)
     
     setGameState(prev => ({
       ...prev,
@@ -342,7 +354,7 @@ export default function FuturesGame() {
   }, [gameState.historicalData, gameState.currentCandleIndex, gameState.position])
 
   const currentCandle = gameState.historicalData[gameState.currentCandleIndex]
-  const selectedCoinData = ALTCOINS.find(c => c.symbol === gameState.selectedCoin)!
+  const selectedPairData = TRADING_PAIRS.find(p => p.id === gameState.selectedPair)!
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -353,10 +365,10 @@ export default function FuturesGame() {
             <h1 className="text-2xl font-bold text-green-400">Errdaycoin Futures</h1>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setShowCoinSelector(true)}
+                onClick={() => setShowPairSelector(true)}
                 className="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-sm"
               >
-                {gameState.selectedCoin} • {selectedCoinData?.difficulty}
+                {gameState.selectedPair}/USDT
               </button>
             </div>
           </div>
@@ -388,7 +400,7 @@ export default function FuturesGame() {
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
-                  <h2 className="text-xl font-semibold">{gameState.selectedCoin}/USDT</h2>
+                  <h2 className="text-xl font-semibold">{gameState.selectedPair}/USDT</h2>
                   {currentCandle && (
                     <div className="text-2xl font-mono text-green-400">
                       ${currentCandle.close.toLocaleString()}
@@ -461,8 +473,8 @@ export default function FuturesGame() {
                 {/* Leverage Control */}
                 <div className="bg-gray-800 rounded-lg p-4">
                   <h4 className="font-semibold mb-3">Leverage</h4>
-                  <div className="flex gap-2 mb-3">
-                    {[1, 5, 10, 20, 50].map(lev => (
+                  <div className="grid grid-cols-5 gap-2 mb-3">
+                    {[1, 2, 5, 10, 20, 25, 50, 75, 100].map(lev => (
                       <button
                         key={lev}
                         onClick={() => setGameState(prev => ({ ...prev, leverage: lev }))}
@@ -562,41 +574,37 @@ export default function FuturesGame() {
         </div>
       </div>
 
-      {/* Coin Selector Modal */}
-      {showCoinSelector && (
+      {/* Trading Pair Selector Modal */}
+      {showPairSelector && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
-          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-xl font-semibold mb-4">Select Coin</h3>
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 max-h-96 overflow-y-auto">
+            <h3 className="text-xl font-semibold mb-4">Select Trading Pair</h3>
             <div className="space-y-2">
-              {ALTCOINS.map(coin => (
+              {TRADING_PAIRS.map(pair => (
                 <button
-                  key={coin.symbol}
+                  key={pair.id}
                   onClick={() => {
-                    setGameState(prev => ({ ...prev, selectedCoin: coin.symbol }))
-                    setShowCoinSelector(false)
+                    setGameState(prev => ({ ...prev, selectedPair: pair.id }))
+                    setShowPairSelector(false)
                   }}
                   className={`w-full p-3 rounded text-left hover:bg-gray-700 ${
-                    gameState.selectedCoin === coin.symbol ? 'bg-gray-700' : ''
+                    gameState.selectedPair === pair.id ? 'bg-gray-700' : ''
                   }`}
                 >
                   <div className="flex justify-between items-center">
                     <div>
-                      <div className="font-semibold">{coin.symbol}</div>
-                      <div className="text-sm text-gray-400">{coin.name}</div>
+                      <div className="font-semibold">{pair.id}/USDT</div>
+                      <div className="text-sm text-gray-400">Volatility: {(pair.volatility * 100).toFixed(1)}%</div>
                     </div>
-                    <div className={`text-sm px-2 py-1 rounded ${
-                      coin.difficulty === 'Easy' ? 'bg-green-600' :
-                      coin.difficulty === 'Medium' ? 'bg-yellow-600' :
-                      coin.difficulty === 'Hard' ? 'bg-orange-600' : 'bg-red-600'
-                    }`}>
-                      {coin.difficulty}
+                    <div className="text-xs text-gray-500">
+                      #{TRADING_PAIRS.indexOf(pair) + 1}
                     </div>
                   </div>
                 </button>
               ))}
             </div>
             <button
-              onClick={() => setShowCoinSelector(false)}
+              onClick={() => setShowPairSelector(false)}
               className="w-full mt-4 bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded"
             >
               Cancel

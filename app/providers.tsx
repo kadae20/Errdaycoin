@@ -12,11 +12,12 @@ const queryClient = new QueryClient({
   },
 })
 
-// Simple Auth Context
+// Auth Context with Google OAuth
 interface AuthContextType {
-  user: { id: string; email: string } | null
+  user: { id: string; email: string; name?: string; avatar?: string } | null
   login: (email: string, password: string) => Promise<boolean>
   register: (email: string, password: string) => Promise<boolean>
+  loginWithGoogle: () => Promise<boolean>
   logout: () => void
   isLoading: boolean
 }
@@ -32,7 +33,7 @@ export function useAuth() {
 }
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<{ id: string; email: string } | null>(null)
+  const [user, setUser] = useState<{ id: string; email: string; name?: string; avatar?: string } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -57,7 +58,11 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // Simple demo authentication
       if (email && password.length >= 6) {
-        const user = { id: Math.random().toString(36).substr(2, 9), email }
+        const user = { 
+          id: Math.random().toString(36).substr(2, 9), 
+          email,
+          name: email.split('@')[0]
+        }
         setUser(user)
         localStorage.setItem('errdaycoin_user', JSON.stringify(user))
         return true
@@ -76,7 +81,11 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // Simple demo registration
       if (email && password.length >= 6) {
-        const user = { id: Math.random().toString(36).substr(2, 9), email }
+        const user = { 
+          id: Math.random().toString(36).substr(2, 9), 
+          email,
+          name: email.split('@')[0]
+        }
         setUser(user)
         localStorage.setItem('errdaycoin_user', JSON.stringify(user))
         return true
@@ -90,13 +99,36 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const loginWithGoogle = async (): Promise<boolean> => {
+    setIsLoading(true)
+    try {
+      // Simulate Google OAuth (in real implementation, use Google OAuth library)
+      // For demo purposes, create a mock Google user
+      const mockGoogleUser = {
+        id: 'google_' + Math.random().toString(36).substr(2, 9),
+        email: 'user@gmail.com',
+        name: 'Google User',
+        avatar: 'https://via.placeholder.com/40/4285f4/ffffff?text=G'
+      }
+      
+      setUser(mockGoogleUser)
+      localStorage.setItem('errdaycoin_user', JSON.stringify(mockGoogleUser))
+      return true
+    } catch (error) {
+      console.error('Google login error:', error)
+      return false
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const logout = () => {
     setUser(null)
     localStorage.removeItem('errdaycoin_user')
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, register, loginWithGoogle, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   )
