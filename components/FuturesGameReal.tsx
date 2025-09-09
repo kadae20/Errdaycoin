@@ -13,20 +13,22 @@ interface CandleData {
 }
 
 interface Position {
-  side: 'long' | 'short' | null
+  id: string
+  side: 'long' | 'short'
   entryPrice: number
   size: number
   leverage: number
   margin: number
   liquidationPrice: number
   unrealizedPnl: number
+  timestamp: number
 }
 
 interface GameState {
   balance: number
   tokens: number
   currentCandleIndex: number
-  position: Position
+  positions: Position[] // Multiple positions support
   selectedCoin: string
   leverage: number
   positionSize: number
@@ -68,15 +70,7 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
     balance: 1000, // $1000 USD starting balance
     tokens: 10, // Free 10 tokens
     currentCandleIndex: 0,
-    position: {
-      side: null,
-      entryPrice: 0,
-      size: 0,
-      leverage: 1,
-      margin: 0,
-      liquidationPrice: 0,
-      unrealizedPnl: 0
-    },
+    positions: [], // Multiple positions support
     selectedCoin: getRandomCoin().symbol,
     leverage: 10, // Default 10x
     positionSize: 10, // Default 10%
@@ -145,15 +139,23 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
   }, [gameState.selectedCoin])
 
   // Calculate P&L for futures
-  const calculatePnL = (currentPrice: number) => {
-    if (!gameState.position.side) return 0
-    
-    const { side, entryPrice, size, leverage } = gameState.position
+  const calculatePnL = (position: Position, currentPrice: number) => {
+    const { side, entryPrice, size, leverage } = position
     const priceChangePercent = side === 'long' 
       ? (currentPrice - entryPrice) / entryPrice
       : (entryPrice - currentPrice) / entryPrice
     
     return size * priceChangePercent * leverage
+  }
+
+  // Get total used balance
+  const getUsedBalance = () => {
+    return gameState.positions.reduce((total, position) => total + position.margin, 0)
+  }
+
+  // Get available balance
+  const getAvailableBalance = () => {
+    return gameState.balance - getUsedBalance()
   }
 
   // Calculate liquidation price
@@ -173,41 +175,42 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
     if (!gameState.historicalData[gameState.currentCandleIndex] || !user) return
     
     const currentPrice = gameState.historicalData[gameState.currentCandleIndex].close
-    const notionalValue = (gameState.balance * gameState.positionSize) / 100
+    const availableBalance = getAvailableBalance()
+    const notionalValue = (availableBalance * gameState.positionSize) / 100
     const margin = notionalValue / gameState.leverage
+    
+    if (margin <= 0 || margin > availableBalance) return // Not enough balance
+    
     const liquidationPrice = calculateLiquidationPrice(currentPrice, side, gameState.leverage)
+    
+    const newPosition: Position = {
+      id: Date.now().toString(),
+      side,
+      entryPrice: currentPrice,
+      size: notionalValue,
+      leverage: gameState.leverage,
+      margin,
+      liquidationPrice,
+      unrealizedPnl: 0,
+      timestamp: Date.now()
+    }
     
     setGameState(prev => ({
       ...prev,
-      position: {
-        side,
-        entryPrice: currentPrice,
-        size: notionalValue,
-        leverage: prev.leverage,
-        margin,
-        liquidationPrice,
-        unrealizedPnl: 0
-      }
+      positions: [...prev.positions, newPosition]
     }))
   }
 
   // Close position
-  const closePosition = () => {
-    if (!gameState.position.side) return
+  const closePosition = (positionId: string) => {
+    const position = gameState.positions.find(p => p.id === positionId)
+    if (!position) return
     
-    const pnl = gameState.position.unrealizedPnl
+    const pnl = position.unrealizedPnl
     setGameState(prev => ({
       ...prev,
       balance: prev.balance + pnl,
-      position: {
-        side: null,
-        entryPrice: 0,
-        size: 0,
-        leverage: 1,
-        margin: 0,
-        liquidationPrice: 0,
-        unrealizedPnl: 0
-      }
+      positions: prev.positions.filter(p => p.id !== positionId)
     }))
   }
 
@@ -218,44 +221,47 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
     const nextIndex = gameState.currentCandleIndex + 1
     const nextCandle = gameState.historicalData[nextIndex]
     
-    // Check liquidation
-    if (gameState.position.side) {
-      const isLiquidated = gameState.position.side === 'long' 
-        ? nextCandle.low <= gameState.position.liquidationPrice
-        : nextCandle.high >= gameState.position.liquidationPrice
+    // Check liquidation for all positions
+    const liquidatedPositions: string[] = []
+    gameState.positions.forEach(position => {
+      const isLiquidated = position.side === 'long' 
+        ? nextCandle.low <= position.liquidationPrice
+        : nextCandle.high >= position.liquidationPrice
         
       if (isLiquidated) {
-        setIsLiquidated(true)
-        
-        setGameState(prev => ({
-          ...prev,
-          currentCandleIndex: nextIndex,
-          tokens: prev.tokens - 1,
-          balance: prev.balance - prev.position.margin,
-          position: {
-            side: null,
-            entryPrice: 0,
-            size: 0,
-            leverage: prev.leverage,
-            margin: 0,
-            liquidationPrice: 0,
-            unrealizedPnl: 0
-          }
-        }))
-        
-        setTimeout(() => setIsLiquidated(false), 3000)
-        return
+        liquidatedPositions.push(position.id)
       }
+    })
+    
+    if (liquidatedPositions.length > 0) {
+      setIsLiquidated(true)
+      
+      // Calculate total margin loss
+      const totalMarginLoss = gameState.positions
+        .filter(p => liquidatedPositions.includes(p.id))
+        .reduce((total, p) => total + p.margin, 0)
+      
+      setGameState(prev => ({
+        ...prev,
+        currentCandleIndex: nextIndex,
+        tokens: prev.tokens - 1,
+        balance: prev.balance - totalMarginLoss,
+        positions: prev.positions.filter(p => !liquidatedPositions.includes(p.id))
+      }))
+      
+      setTimeout(() => setIsLiquidated(false), 3000)
+      return
     }
     
+    // Update P&L for all positions
     setGameState(prev => ({
       ...prev,
       currentCandleIndex: nextIndex,
       tokens: prev.tokens - 1,
-      position: {
-        ...prev.position,
-        unrealizedPnl: prev.position.side ? calculatePnL(nextCandle.close) : 0
-      }
+      positions: prev.positions.map(position => ({
+        ...position,
+        unrealizedPnl: calculatePnL(position, nextCandle.close)
+      }))
     }))
   }
 
@@ -327,10 +333,10 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
       ctx.fillRect(x - candleWidth / 4, bodyY, candleWidth / 2, bodyHeight || 1)
     })
 
-    // Draw position lines
-    if (gameState.position.side) {
-      const entryY = padding + chartHeight - ((gameState.position.entryPrice - minPrice) / priceRange) * chartHeight
-      ctx.strokeStyle = '#fbbf24'
+    // Draw position lines for all positions
+    gameState.positions.forEach((position, index) => {
+      const entryY = padding + chartHeight - ((position.entryPrice - minPrice) / priceRange) * chartHeight
+      ctx.strokeStyle = position.side === 'long' ? '#10b981' : '#ef4444'
       ctx.lineWidth = 2
       ctx.setLineDash([5, 5])
       ctx.beginPath()
@@ -338,7 +344,7 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
       ctx.lineTo(rect.width - padding, entryY)
       ctx.stroke()
       
-      const liqY = padding + chartHeight - ((gameState.position.liquidationPrice - minPrice) / priceRange) * chartHeight
+      const liqY = padding + chartHeight - ((position.liquidationPrice - minPrice) / priceRange) * chartHeight
       ctx.strokeStyle = '#ef4444'
       ctx.lineWidth = 1
       ctx.setLineDash([3, 3])
@@ -347,7 +353,7 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
       ctx.lineTo(rect.width - padding, liqY)
       ctx.stroke()
       ctx.setLineDash([])
-    }
+    })
 
     // Draw price
     ctx.fillStyle = '#ffffff'
@@ -355,10 +361,11 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
     const currentPrice = visibleCandles[visibleCandles.length - 1]?.close || 0
     ctx.fillText(`$${currentPrice.toLocaleString()}`, rect.width - padding - 120, 30)
 
-  }, [gameState.historicalData, gameState.currentCandleIndex, gameState.position])
+  }, [gameState.historicalData, gameState.currentCandleIndex, gameState.positions])
 
   const currentCandle = gameState.historicalData[gameState.currentCandleIndex]
   const selectedCoinData = BINANCE_COINS.find(c => c.symbol === gameState.selectedCoin)!
+  const totalPnL = gameState.positions.reduce((total, position) => total + position.unrealizedPnl, 0)
 
   return (
     <div className="min-h-screen bg-gray-900 text-white relative">
@@ -452,7 +459,6 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
           <div className="bg-gray-800 rounded-lg p-4 mb-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
-                <h2 className="text-xl font-bold">{selectedCoinData?.name || 'Unknown'}</h2>
                 {currentCandle && (
                   <div className="text-2xl font-mono text-green-400">
                     ${currentCandle.close.toLocaleString()}
@@ -461,15 +467,13 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
               </div>
               <div className="text-right">
                 <div className="text-xs text-gray-400">Day {gameState.currentCandleIndex + 1}/50</div>
-                {gameState.position.side && (
+                {gameState.positions.length > 0 && (
                   <div className="text-sm">
-                    <span className={`font-bold ${
-                      gameState.position.side === 'long' ? 'text-green-400' : 'text-red-400'
-                    }`}>
-                      {gameState.position.side === 'long' ? 'LONG' : 'SHORT'} {gameState.position.leverage}x
+                    <span className="font-bold text-white">
+                      {gameState.positions.length} Position{gameState.positions.length > 1 ? 's' : ''}
                     </span>
-                    <div className="text-xs text-gray-400">
-                      P&L: {gameState.position.unrealizedPnl > 0 ? '+' : ''}${gameState.position.unrealizedPnl.toFixed(2)}
+                    <div className={`text-xs ${totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      Total P&L: {totalPnL > 0 ? '+' : ''}${totalPnL.toFixed(2)}
                     </div>
                   </div>
                 )}
@@ -498,7 +502,7 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
                 value={gameState.leverage}
                 onChange={(e) => setGameState(prev => ({ ...prev, leverage: Number(e.target.value) }))}
                 className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer"
-                disabled={!!gameState.position.side}
+                disabled={false}
               />
               <div className="flex justify-between text-xs text-gray-500 mt-1">
                 <span>1x</span>
@@ -519,7 +523,7 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
                 value={gameState.positionSize}
                 onChange={(e) => setGameState(prev => ({ ...prev, positionSize: Number(e.target.value) }))}
                 className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer"
-                disabled={!!gameState.position.side}
+                disabled={false}
               />
               <div className="flex justify-between text-xs text-gray-500 mt-1">
                 <span>1%</span>
@@ -529,31 +533,27 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
 
             {/* Trading Buttons */}
             <div className="bg-gray-800 rounded-lg p-4">
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                <button
-                  onClick={() => openPosition('long')}
-                  disabled={!!gameState.position.side || !user}
-                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white py-3 px-4 rounded font-bold"
-                >
-                  LONG
-                </button>
-                <button
-                  onClick={() => openPosition('short')}
-                  disabled={!!gameState.position.side || !user}
-                  className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white py-3 px-4 rounded font-bold"
-                >
-                  SHORT
-                </button>
+              <div className="mb-4">
+                <div className="text-sm text-gray-400 mb-2">
+                  Available: ${getAvailableBalance().toFixed(2)} / ${gameState.balance.toFixed(2)}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => openPosition('long')}
+                    disabled={getAvailableBalance() <= 0 || !user}
+                    className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white py-3 px-4 rounded font-bold"
+                  >
+                    LONG
+                  </button>
+                  <button
+                    onClick={() => openPosition('short')}
+                    disabled={getAvailableBalance() <= 0 || !user}
+                    className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white py-3 px-4 rounded font-bold"
+                  >
+                    SHORT
+                  </button>
+                </div>
               </div>
-              
-              {gameState.position.side && (
-                <button
-                  onClick={closePosition}
-                  className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded font-bold mb-2"
-                >
-                  Close Position
-                </button>
-              )}
               
               <button
                 onClick={nextCandle}
@@ -564,6 +564,62 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
               </button>
             </div>
           </div>
+
+          {/* Positions Table */}
+          {gameState.positions.length > 0 && (
+            <div className="bg-gray-800 rounded-lg p-4 mt-4">
+              <h3 className="text-lg font-bold mb-4">Positions</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-700">
+                      <th className="text-left py-2">Type</th>
+                      <th className="text-left py-2">Size</th>
+                      <th className="text-left py-2">Entry Price</th>
+                      <th className="text-left py-2">Market Price</th>
+                      <th className="text-left py-2">Liq. Price</th>
+                      <th className="text-left py-2">Unrealized P/L</th>
+                      <th className="text-left py-2">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {gameState.positions.map((position) => (
+                      <tr key={position.id} className="border-b border-gray-700">
+                        <td className="py-2">
+                          <span className={`font-bold ${
+                            position.side === 'long' ? 'text-green-400' : 'text-red-400'
+                          }`}>
+                            {position.side.toUpperCase()} {position.leverage}x
+                          </span>
+                        </td>
+                        <td className="py-2">${position.size.toFixed(2)}</td>
+                        <td className="py-2">${position.entryPrice.toLocaleString()}</td>
+                        <td className="py-2">
+                          {currentCandle ? `$${currentCandle.close.toLocaleString()}` : 'N/A'}
+                        </td>
+                        <td className="py-2 text-red-400">
+                          ${position.liquidationPrice.toLocaleString()}
+                        </td>
+                        <td className={`py-2 font-bold ${
+                          position.unrealizedPnl >= 0 ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                          {position.unrealizedPnl > 0 ? '+' : ''}${position.unrealizedPnl.toFixed(2)}
+                        </td>
+                        <td className="py-2">
+                          <button
+                            onClick={() => closePosition(position.id)}
+                            className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-xs font-bold"
+                          >
+                            Close
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
