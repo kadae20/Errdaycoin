@@ -6,22 +6,22 @@ import ClientProviders from './providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Errdaycoin - Chart Game | Trading Simulator | Stock Market Game | Day Trading',
-  description: 'Master trading with Errdaycoin! Ultimate chart game, stock trading simulator, crypto trading game, forex simulator. Learn day trading, practice trading stocks, virtual trading platform. Free trading quiz web for beginners to pros.',
-  keywords: 'chart game, trading game, market timing game, day trading simulator, stock trading game, crypto trading game, futures trading simulator, forex trading simulator, investment game, trading quiz game, chart prediction game, stock market simulator, paper trading web, buy or sell game, trading challenge, virtual trading platform, learn day trading, practice trading stocks',
+  title: 'Crypto Futures Trading Simulator – Play Chart Quiz & Practice Leverage Trading | Errdaycoin',
+  description: 'Join the ultimate crypto quiz game. Guess Bitcoin & Ethereum charts, simulate futures trading with leverage, and climb the leaderboard. Free crypto demo trading game.',
+  keywords: 'crypto futures trading simulator, bitcoin futures chart quiz, play crypto trading game online, crypto chart guessing game, crypto leverage trading quiz, crypto demo trading game free, bitcoin trading simulator, ethereum futures practice, crypto chart analysis game, leverage trading practice',
   authors: [{ name: 'Errdaycoin' }],
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   openGraph: {
-    title: 'Errdaycoin - Chart Game & Trading Simulator',
-    description: 'Master trading with Errdaycoin! Ultimate chart game, stock trading simulator, crypto trading game.',
+    title: 'Errdaycoin - Crypto Futures Trading Simulator',
+    description: 'Master crypto futures trading with our interactive chart quiz game. Practice with real Bitcoin & altcoin data.',
     type: 'website',
     locale: 'en_US',
     siteName: 'Errdaycoin',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Errdaycoin - Chart Game & Trading Simulator',
-    description: 'Master trading with Errdaycoin! Ultimate chart game, stock trading simulator, crypto trading game.',
+    title: 'Errdaycoin - Crypto Futures Trading Simulator',
+    description: 'Master crypto futures trading with our interactive chart quiz game. Practice with real Bitcoin & altcoin data.',
     creator: '@errdaycoin',
   },
   robots: {

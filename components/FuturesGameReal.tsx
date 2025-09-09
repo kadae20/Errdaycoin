@@ -425,9 +425,15 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
       {/* Header */}
       <div className="bg-gray-800 p-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-green-400">Errdaycoin: Chart Game</h1>
-          <div className="text-sm text-gray-400">
-            Practice futures trading with historical data
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">📈</span>
+            <div>
+              <h1 className="text-xl font-bold text-green-400">Errdaycoin</h1>
+              <div className="text-xs text-gray-400">Crypto Chart Quiz Game</div>
+            </div>
+          </div>
+          <div className="hidden md:block text-sm text-gray-400">
+            Master Bitcoin & Ethereum futures trading
           </div>
         </div>
         <div className="flex items-center gap-6">
