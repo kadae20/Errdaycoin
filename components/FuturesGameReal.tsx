@@ -80,6 +80,15 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
 
   const [isLiquidated, setIsLiquidated] = useState(false)
   const [showTutorial, setShowTutorial] = useState(true)
+  const [gameEnded, setGameEnded] = useState(false)
+  const [finalResults, setFinalResults] = useState({
+    startingBalance: 1000,
+    finalBalance: 1000,
+    totalProfit: 0,
+    profitPercentage: 0,
+    totalTrades: 0,
+    coinName: ''
+  })
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   // Generate realistic historical data
@@ -214,9 +223,50 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
     }))
   }
 
+  // End game and show results
+  const endGame = () => {
+    const selectedCoinData = BINANCE_COINS.find(c => c.symbol === gameState.selectedCoin)!
+    const finalBalance = gameState.balance
+    const totalProfit = finalBalance - 1000
+    const profitPercentage = (totalProfit / 1000) * 100
+    
+    setFinalResults({
+      startingBalance: 1000,
+      finalBalance: finalBalance,
+      totalProfit: totalProfit,
+      profitPercentage: profitPercentage,
+      totalTrades: gameState.positions.length, // This would need to track closed positions in a real implementation
+      coinName: selectedCoinData.name
+    })
+    
+    setGameEnded(true)
+  }
+
+  // Restart game
+  const restartGame = () => {
+    const newCoin = getRandomCoin()
+    setGameState({
+      balance: 1000,
+      tokens: 10,
+      currentCandleIndex: 0,
+      positions: [],
+      selectedCoin: newCoin.symbol,
+      leverage: 10,
+      positionSize: 10,
+      gameActive: true,
+      historicalData: generateHistoricalData(newCoin, 50)
+    })
+    setGameEnded(false)
+    setShowTutorial(false)
+  }
+
   // Next candle
   const nextCandle = () => {
-    if (gameState.tokens <= 0 || gameState.currentCandleIndex >= gameState.historicalData.length - 1) return
+    if (gameState.tokens <= 0 || gameState.currentCandleIndex >= gameState.historicalData.length - 1) {
+      // Game ended - show results
+      endGame()
+      return
+    }
     
     const nextIndex = gameState.currentCandleIndex + 1
     const nextCandle = gameState.historicalData[nextIndex]
@@ -366,6 +416,103 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
   const currentCandle = gameState.historicalData[gameState.currentCandleIndex]
   const selectedCoinData = BINANCE_COINS.find(c => c.symbol === gameState.selectedCoin)!
   const totalPnL = gameState.positions.reduce((total, position) => total + position.unrealizedPnl, 0)
+
+  // Show game results screen
+  if (gameEnded) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="bg-gray-800 rounded-2xl p-8 max-w-md mx-4 text-center border border-gray-700">
+          {/* Crown Logo */}
+          <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span className="text-2xl">👑</span>
+          </div>
+          
+          {/* Coin Name */}
+          <h2 className="text-2xl font-bold text-green-400 mb-2">{finalResults.coinName}</h2>
+          <p className="text-gray-400 text-sm mb-6">Trading Period: Day 1 - Day {gameState.currentCandleIndex + 1}</p>
+          
+          {/* Results */}
+          <div className="space-y-4 mb-8">
+            {/* Starting vs Final Balance */}
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Starting Balance</span>
+              <span className="text-white font-mono">${finalResults.startingBalance.toLocaleString()}</span>
+            </div>
+            
+            <div className="flex justify-center my-4">
+              <span className="text-gray-500 text-2xl">→</span>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Final Balance</span>
+              <span className={`font-mono font-bold ${finalResults.totalProfit >= 0 ? 'text-red-400' : 'text-blue-400'}`}>
+                ${finalResults.finalBalance.toLocaleString()}
+              </span>
+            </div>
+            
+            {/* Profit/Loss */}
+            <div className="border-t border-gray-700 pt-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-gray-400">Profit/Loss</span>
+                <span className={`font-bold ${finalResults.totalProfit >= 0 ? 'text-red-400' : 'text-blue-400'}`}>
+                  {finalResults.totalProfit >= 0 ? '+' : ''}${finalResults.totalProfit.toFixed(2)}
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Return</span>
+                <span className={`font-bold ${finalResults.profitPercentage >= 0 ? 'text-red-400' : 'text-blue-400'}`}>
+                  {finalResults.profitPercentage >= 0 ? '+' : ''}{finalResults.profitPercentage.toFixed(2)}%
+                </span>
+              </div>
+            </div>
+            
+            {/* Additional Stats */}
+            <div className="border-t border-gray-700 pt-4 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Days Played</span>
+                <span className="text-white">{gameState.currentCandleIndex + 1} days</span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Tokens Used</span>
+                <span className="text-white">{10 - gameState.tokens} 🪙</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Fire Rating */}
+          <div className="flex justify-center items-center mb-6">
+            <span className="text-red-500 mr-2">🔥</span>
+            <span className="text-white font-bold">
+              {finalResults.profitPercentage >= 50 ? '5' : 
+               finalResults.profitPercentage >= 20 ? '4' :
+               finalResults.profitPercentage >= 0 ? '3' :
+               finalResults.profitPercentage >= -20 ? '2' : '1'}
+            </span>
+            <span className="text-red-500 ml-2">🔥</span>
+          </div>
+          
+          {/* Buttons */}
+          <div className="space-y-3">
+            <button
+              onClick={restartGame}
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-lg font-bold transition-colors flex items-center justify-center gap-2"
+            >
+              🎮 New Game <span className="text-yellow-400">🪙 x1</span>
+            </button>
+            
+            <button
+              onClick={() => {/* Share functionality */}}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-6 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              📊 Share Results
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white relative">
