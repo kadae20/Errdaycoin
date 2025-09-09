@@ -172,7 +172,7 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
 
   // Open position
   const openPosition = (side: 'long' | 'short') => {
-    if (!gameState.historicalData[gameState.currentCandleIndex] || !user) return
+    if (!gameState.historicalData[gameState.currentCandleIndex]) return
     
     const currentPrice = gameState.historicalData[gameState.currentCandleIndex].close
     const availableBalance = getAvailableBalance()
@@ -546,15 +546,15 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => openPosition('long')}
-                    disabled={getAvailableBalance() <= 0 || !user}
-                    className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white py-3 px-4 rounded font-bold"
+                    disabled={getAvailableBalance() <= 0}
+                    className="bg-green-500 hover:bg-green-600 disabled:bg-gray-600 text-white py-3 px-4 rounded-lg font-bold transition-colors"
                   >
                     LONG
                   </button>
                   <button
                     onClick={() => openPosition('short')}
-                    disabled={getAvailableBalance() <= 0 || !user}
-                    className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white py-3 px-4 rounded font-bold"
+                    disabled={getAvailableBalance() <= 0}
+                    className="bg-red-500 hover:bg-red-600 disabled:bg-gray-600 text-white py-3 px-4 rounded-lg font-bold transition-colors"
                   >
                     SHORT
                   </button>
@@ -563,8 +563,8 @@ export default function FuturesGameReal({ showAuthModal, onShowAuth }: FuturesGa
               
               <button
                 onClick={nextCandle}
-                disabled={gameState.tokens <= 0 || !user}
-                className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 text-white py-2 px-4 rounded font-bold"
+                disabled={gameState.tokens <= 0}
+                className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 text-white py-2 px-4 rounded-lg font-bold transition-colors"
               >
                 Next Day (1 🪙)
               </button>
