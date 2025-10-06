@@ -11,6 +11,10 @@ export const createServerClient = () =>
 export const createRouteHandlerSupabaseClient = () =>
   createRouteHandlerClient<Database>({ cookies })
 
+// 일반적인 createClient 함수 (API Routes에서 사용)
+export const createClient = () =>
+  createRouteHandlerClient<Database>({ cookies })
+
 // Service Role 클라이언트 (관리자 권한)
 export const createServiceClient = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL

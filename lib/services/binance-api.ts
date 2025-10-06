@@ -251,6 +251,86 @@ class BinanceAPI {
     
     return nameMap[symbol] || symbol.replace('USDT', '')
   }
+
+  // 게임용 랜덤 차트 데이터 가져오기
+  async getRandomGameChart(
+    symbol?: string,
+    previewDays: number = 5,
+    totalDays: number = 10
+  ): Promise<{
+    symbol: string
+    preview_candles: CandleData[]
+    answer_candles: CandleData[]
+    full_data: CandleData[]
+  }> {
+    try {
+      // 랜덤 심볼 선택
+      const selectedSymbol = symbol || this.getRandomSymbol()
+      
+      // 일봉 데이터 가져오기 (더 많은 데이터를 가져와서 랜덤 구간 선택)
+      const allCandles = await this.getKlines(selectedSymbol, '1d', 365)
+      
+      if (allCandles.length < totalDays) {
+        throw new Error('Insufficient historical data')
+      }
+
+      // 랜덤 시작점 선택 (마지막 totalDays개는 제외)
+      const maxStartIndex = allCandles.length - totalDays - 1
+      const startIndex = Math.floor(Math.random() * maxStartIndex)
+      
+      // 선택된 구간의 데이터
+      const gameData = allCandles.slice(startIndex, startIndex + totalDays)
+      
+      return {
+        symbol: selectedSymbol,
+        preview_candles: gameData.slice(0, previewDays),
+        answer_candles: gameData.slice(previewDays),
+        full_data: gameData
+      }
+    } catch (error) {
+      console.error('Failed to fetch random game chart:', error)
+      throw error
+    }
+  }
+
+  // 랜덤 심볼 선택
+  private getRandomSymbol(): string {
+    const symbols = this.getPopularCryptoSymbols()
+    return symbols[Math.floor(Math.random() * symbols.length)]
+  }
+
+  // 특정 날짜부터 차트 데이터 가져오기 (게임용)
+  async getHistoricalChart(
+    symbol: string,
+    startDate: Date,
+    days: number = 10
+  ): Promise<CandleData[]> {
+    try {
+      const startTime = startDate.getTime()
+      const endTime = startTime + (days * 24 * 60 * 60 * 1000)
+      
+      const url = `${this.baseUrl}/klines?symbol=${symbol.toUpperCase()}&interval=1d&startTime=${startTime}&endTime=${endTime}&limit=1000`
+      const response = await fetch(url)
+      
+      if (!response.ok) {
+        throw new Error(`Binance API error: ${response.status}`)
+      }
+
+      const data: BinanceKline[] = await response.json()
+      
+      return data.map(kline => ({
+        time: Math.floor(kline.openTime / 1000),
+        open: parseFloat(kline.open),
+        high: parseFloat(kline.high),
+        low: parseFloat(kline.low),
+        close: parseFloat(kline.close),
+        volume: parseFloat(kline.volume),
+      }))
+    } catch (error) {
+      console.error('Failed to fetch historical chart:', error)
+      throw error
+    }
+  }
 }
 
 // 싱글톤 인스턴스

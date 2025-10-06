@@ -26,6 +26,244 @@ export interface Database {
           created_at?: string
         }
       }
+      profiles: {
+        Row: {
+          id: string
+          nickname: string | null
+          avatar_url: string | null
+          locale: string
+          role: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          nickname?: string | null
+          avatar_url?: string | null
+          locale?: string
+          role?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          nickname?: string | null
+          avatar_url?: string | null
+          locale?: string
+          role?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      user_tokens: {
+        Row: {
+          user_id: string
+          retry_tokens: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          retry_tokens?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          retry_tokens?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      token_logs: {
+        Row: {
+          id: number
+          user_id: string | null
+          delta: number
+          kind: 'earn' | 'spend'
+          reason: string | null
+          meta: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          user_id?: string | null
+          delta: number
+          kind: 'earn' | 'spend'
+          reason?: string | null
+          meta?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          user_id?: string | null
+          delta?: number
+          kind?: 'earn' | 'spend'
+          reason?: string | null
+          meta?: Json | null
+          created_at?: string
+        }
+      }
+      referral_codes: {
+        Row: {
+          user_id: string
+          code: string
+          created_at: string
+        }
+        Insert: {
+          user_id: string
+          code: string
+          created_at?: string
+        }
+        Update: {
+          user_id?: string
+          code?: string
+          created_at?: string
+        }
+      }
+      referrals: {
+        Row: {
+          id: number
+          referrer_id: string | null
+          referee_id: string
+          code: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          referrer_id?: string | null
+          referee_id: string
+          code?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          referrer_id?: string | null
+          referee_id?: string
+          code?: string | null
+          created_at?: string
+        }
+      }
+      clicks: {
+        Row: {
+          click_id: string
+          user_id: string | null
+          exchange: string | null
+          ref_code: string | null
+          banner_slot: string | null
+          utm_source: string | null
+          utm_medium: string | null
+          utm_campaign: string | null
+          fingerprint: string | null
+          created_at: string
+        }
+        Insert: {
+          click_id?: string
+          user_id?: string | null
+          exchange?: string | null
+          ref_code?: string | null
+          banner_slot?: string | null
+          utm_source?: string | null
+          utm_medium?: string | null
+          utm_campaign?: string | null
+          fingerprint?: string | null
+          created_at?: string
+        }
+        Update: {
+          click_id?: string
+          user_id?: string | null
+          exchange?: string | null
+          ref_code?: string | null
+          banner_slot?: string | null
+          utm_source?: string | null
+          utm_medium?: string | null
+          utm_campaign?: string | null
+          fingerprint?: string | null
+          created_at?: string
+        }
+      }
+      referral_rewards: {
+        Row: {
+          id: number
+          referee_id: string | null
+          month: string
+          reward_type: string | null
+          amount: number | null
+          rewarded: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          referee_id?: string | null
+          month: string
+          reward_type?: string | null
+          amount?: number | null
+          rewarded?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          referee_id?: string | null
+          month?: string
+          reward_type?: string | null
+          amount?: number | null
+          rewarded?: boolean
+          created_at?: string
+        }
+      }
+      game_sessions: {
+        Row: {
+          id: number
+          user_id: string | null
+          symbol: string | null
+          entry_price: number | null
+          leverage: number | null
+          position_size: number | null
+          side: 'long' | 'short' | null
+          liquidation_price: number | null
+          exit_price: number | null
+          pnl: number | null
+          roi: number | null
+          nextday_uses_consumed: number
+          is_liquidated: boolean
+          created_at: string
+          completed_at: string | null
+        }
+        Insert: {
+          id?: number
+          user_id?: string | null
+          symbol?: string | null
+          entry_price?: number | null
+          leverage?: number | null
+          position_size?: number | null
+          side?: 'long' | 'short' | null
+          liquidation_price?: number | null
+          exit_price?: number | null
+          pnl?: number | null
+          roi?: number | null
+          nextday_uses_consumed?: number
+          is_liquidated?: boolean
+          created_at?: string
+          completed_at?: string | null
+        }
+        Update: {
+          id?: number
+          user_id?: string | null
+          symbol?: string | null
+          entry_price?: number | null
+          leverage?: number | null
+          position_size?: number | null
+          side?: 'long' | 'short' | null
+          liquidation_price?: number | null
+          exit_price?: number | null
+          pnl?: number | null
+          roi?: number | null
+          nextday_uses_consumed?: number
+          is_liquidated?: boolean
+          created_at?: string
+          completed_at?: string | null
+        }
+      }
       market_category: {
         Row: {
           id: number
