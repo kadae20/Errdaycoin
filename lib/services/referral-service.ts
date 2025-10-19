@@ -1,6 +1,7 @@
 // ErrdayCoin 추천인 시스템 서비스
 
-import { createClient } from '@/lib/supabase/client'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { Database } from '@/lib/types/database'
 import { gameService } from './game-service'
 import { GAME_CONSTANTS } from '@/lib/types/game'
 
@@ -27,7 +28,16 @@ export interface ReferralStats {
 
 export class ReferralService {
   private getSupabase() {
-    return createClient()
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
+    
+    return createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    })
   }
 
   // 유저의 추천 코드 가져오기
@@ -48,7 +58,7 @@ export class ReferralService {
         throw error
       }
 
-      return data.referral_code
+      return (data as any).referral_code
     } catch (error) {
       console.error('Failed to get user referral code:', error)
       throw error
@@ -90,7 +100,7 @@ export class ReferralService {
         .insert({
           user_id: userId,
           referral_code: code
-        })
+        } as any)
 
       if (error) throw error
 
@@ -115,7 +125,7 @@ export class ReferralService {
         return { valid: false }
       }
 
-      return { valid: true, referrerId: data.user_id }
+      return { valid: true, referrerId: (data as any).user_id }
     } catch (error) {
       console.error('Failed to validate referral code:', error)
       return { valid: false }
@@ -131,7 +141,7 @@ export class ReferralService {
         .insert({
           user_id: userId,
           referral_code: code
-        })
+        } as any)
 
       if (error) throw error
     } catch (error) {
@@ -165,7 +175,7 @@ export class ReferralService {
         throw new Error('Invalid referral code')
       }
 
-      const referrerId = referralData.user_id
+      const referrerId = (referralData as any).user_id
 
       // 자기 자신을 추천할 수 없음
       if (referrerId === refereeId) {
@@ -208,21 +218,22 @@ export class ReferralService {
 
       if (error) throw error
 
-      const totalReferrals = referralStats?.length || 0
-      const totalRewards = referralStats?.reduce((sum, reward) => sum + reward.referrer_tokens, 0) || 0
+      const stats = (referralStats || []) as any[]
+      const totalReferrals = stats.length
+      const totalRewards = stats.reduce((sum, reward) => sum + reward.referrer_tokens, 0)
       
       // 이번 달 추천 수
       const thisMonth = new Date()
       thisMonth.setDate(1)
       thisMonth.setHours(0, 0, 0, 0)
       
-      const thisMonthReferrals = referralStats?.filter(
+      const thisMonthReferrals = stats.filter(
         reward => new Date(reward.created_at) >= thisMonth
-      ).length || 0
+      ).length
       
-      const thisMonthRewards = referralStats?.filter(
+      const thisMonthRewards = stats.filter(
         reward => new Date(reward.created_at) >= thisMonth
-      ).reduce((sum, reward) => sum + reward.referrer_tokens, 0) || 0
+      ).reduce((sum, reward) => sum + reward.referrer_tokens, 0)
 
       return {
         totalReferrals,
@@ -274,13 +285,13 @@ export class ReferralService {
 
       if (error) throw error
 
-      return data?.map(item => ({
+      return (data as any[] || []).map((item: any) => ({
         id: item.id,
         referee_id: item.referee_id,
         code: item.code,
         created_at: item.created_at,
-        nickname: (item.profiles as any)?.nickname
-      })) || []
+        nickname: item.profiles?.nickname
+      }))
 
     } catch (error) {
       console.error('Failed to get referred users:', error)
@@ -307,7 +318,8 @@ export class ReferralService {
 
       // 추천인별 카운트
       const referrerCounts: Record<string, number> = {}
-      referrals?.forEach(ref => {
+      const refs = (referrals || []) as any[]
+      refs.forEach(ref => {
         referrerCounts[ref.referrer_id] = (referrerCounts[ref.referrer_id] || 0) + 1
       })
 
@@ -332,7 +344,7 @@ export class ReferralService {
               reward_type: 'monthly_bonus',
               amount: bonusReward,
               rewarded: true
-            })
+            } as any)
         }
       }
 
