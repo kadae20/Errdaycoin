@@ -19,6 +19,9 @@ export interface GameSession {
 }
 
 export interface Position {
+  id?: string
+  user_id?: string
+  session_id?: string
   side: 'long' | 'short'
   entry_price: number
   leverage: number
@@ -39,6 +42,7 @@ export interface GameState {
   retry_tokens: number
   is_position_open: boolean
   is_liquidated: boolean
+  balance?: number // 현재 잔액
 }
 
 export interface CandleData {
@@ -52,7 +56,10 @@ export interface CandleData {
 
 export interface UserTokens {
   user_id: string
+  balance: string
   retry_tokens: number
+  referral_tokens: number
+  referral_code: string
   created_at: string
   updated_at: string
 }
@@ -105,33 +112,51 @@ export const GAME_CONSTANTS = {
 export function calculateLiquidationPrice(
   entry_price: number,
   leverage: number,
-  side: 'long' | 'short'
+  side: 'long' | 'short',
+  balance: number = 1000,
+  position_size: number
 ): number {
+  // 간단한 청산가 계산
+  // 10배율이면 약 9% 하락 시 청산 (90% 마진 사용)
+  const liquidation_percentage = 0.9 / leverage // 90% / 레버리지
+  
   if (side === 'long') {
-    return entry_price * (1 - (1 / leverage))
+    // 롱 포지션: 청산가 = 진입가 × (1 - 청산퍼센트)
+    return entry_price * (1 - liquidation_percentage)
   } else {
-    return entry_price * (1 + (1 / leverage))
+    // 숏 포지션: 청산가 = 진입가 × (1 + 청산퍼센트)
+    return entry_price * (1 + liquidation_percentage)
   }
 }
 
-// PNL 계산 함수
+// PNL 계산 함수 (간단한 시그니처)
 export function calculatePNL(
   entry_price: number,
-  exit_price: number,
-  position_size: number,
-  leverage: number,
-  side: 'long' | 'short'
+  current_price: number,
+  side: 'long' | 'short',
+  position_size: number
 ): number {
-  if (side === 'long') {
-    return (exit_price - entry_price) * position_size * leverage
-  } else {
-    return (entry_price - exit_price) * position_size * leverage
-  }
+  const price_diff = side === 'long' 
+    ? current_price - entry_price 
+    : entry_price - current_price
+  
+  // PNL = 가격차이 * 포지션크기 / 진입가 * 포지션크기
+  return (price_diff / entry_price) * position_size
 }
 
-// ROI 계산 함수
-export function calculateROI(pnl: number, position_size: number): number {
-  return (pnl / position_size) * 100
+// ROI 계산 함수 (간단한 시그니처)
+export function calculateROI(
+  entry_price: number,
+  current_price: number,
+  side: 'long' | 'short',
+  leverage: number
+): number {
+  const price_diff = side === 'long' 
+    ? current_price - entry_price 
+    : entry_price - current_price
+  
+  // ROI = (가격차이 / 진입가) * 레버리지 * 100
+  return (price_diff / entry_price) * leverage * 100
 }
 
 // 청산 여부 확인 함수

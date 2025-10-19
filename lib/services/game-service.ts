@@ -79,7 +79,7 @@ export class GameService {
       const positionSize = (basePortfolio * positionPercentage) / 100
 
       // 청산가 계산
-      const liquidationPrice = calculateLiquidationPrice(entryPrice, leverage, side)
+      const liquidationPrice = calculateLiquidationPrice(entryPrice, leverage, side, 1000, positionSize)
 
       // 게임 세션 업데이트
       const { data: session, error } = await this.supabase
@@ -164,13 +164,17 @@ export class GameService {
         pnl = calculatePNL(
           currentSession.entry_price,
           newPrice,
-          currentSession.position_size!,
-          currentSession.leverage!,
-          currentSession.side as 'long' | 'short'
+          currentSession.side as 'long' | 'short',
+          currentSession.position_size!
         )
         
         // ROI 계산
-        roi = calculateROI(pnl, currentSession.position_size!)
+        roi = calculateROI(
+          currentSession.entry_price!,
+          newPrice,
+          currentSession.side as 'long' | 'short',
+          currentSession.leverage!
+        )
       } else {
         // 청산 시 100% 손실
         pnl = -currentSession.position_size!
@@ -250,11 +254,20 @@ export class GameService {
       if (error) {
         // 토큰 정보가 없으면 생성
         if (error.code === 'PGRST116') {
+          // 추천코드 먼저 생성
+          const referralService = new (await import('./referral-service')).ReferralService()
+          const referralCode = await referralService.getUserReferralCode(userId)
+          
           const { data: newTokens, error: createError } = await this.supabase
             .from('user_tokens')
             .insert({
               user_id: userId,
-              retry_tokens: GAME_CONSTANTS.DEFAULT_RETRY_TOKENS
+              balance: '1000.00',
+              retry_tokens: 15, // 매일 15개
+              referral_tokens: 0,
+              referral_code: referralCode,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
             })
             .select()
             .single()
@@ -265,9 +278,101 @@ export class GameService {
         throw error
       }
 
-      return data
+      // 추천 보상 토큰 계산
+      const referralBonus = await this.getUserReferralBonus(userId)
+      const totalTokens = data.retry_tokens + referralBonus
+
+      // 잔액 확인 및 리셋 (1000 미만이면 1000으로 리셋)
+      const currentBalance = parseFloat(data.balance)
+      const resetBalance = currentBalance >= 1000 ? currentBalance : 1000
+
+      // 잔액이 리셋되어야 하는 경우 업데이트
+      if (resetBalance !== currentBalance) {
+        const { error: updateError } = await this.supabase
+          .from('user_tokens')
+          .update({
+            balance: resetBalance.toFixed(2),
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId)
+
+        if (updateError) {
+          console.error('Failed to reset balance:', updateError)
+        }
+      }
+
+      return {
+        ...data,
+        retry_tokens: totalTokens, // 추천 보상 포함한 총 토큰 수
+        balance: resetBalance.toFixed(2)
+      }
     } catch (error) {
       console.error('Failed to get user tokens:', error)
+      throw error
+    }
+  }
+
+  // 사용자의 추천 보상 토큰 수 계산 (영구적)
+  private async getUserReferralBonus(userId: string): Promise<number> {
+    try {
+      // 추천한 사람 수 + 추천받은 사람 수 (영구적)
+      const { data: referralStats, error } = await this.supabase
+        .from('referral_relationships')
+        .select('referrer_id, referee_id')
+        .or(`referrer_id.eq.${userId},referee_id.eq.${userId}`)
+
+      if (error) throw error
+
+      const totalReferrals = referralStats?.length || 0
+      return totalReferrals * 3 // 추천당 +3 토큰 (영구적)
+
+    } catch (error) {
+      console.error('Failed to calculate referral bonus:', error)
+      return 0
+    }
+  }
+
+  // 토큰 리필 (광고 시청 후)
+  async refillToken(userId: string, reason: string): Promise<void> {
+    try {
+      // 현재 토큰 수 확인
+      const { data: currentTokens, error: fetchError } = await this.supabase
+        .from('user_tokens')
+        .select('retry_tokens')
+        .eq('user_id', userId)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      // 토큰 1개 추가
+      const { error: updateError } = await this.supabase
+        .from('user_tokens')
+        .update({
+          retry_tokens: currentTokens.retry_tokens + 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+
+      if (updateError) throw updateError
+
+      // 로그 기록
+      const { error: logError } = await this.supabase
+        .from('token_logs')
+        .insert({
+          user_id: userId,
+          delta: 1,
+          reason: reason,
+          meta: { source: 'ad_watch' },
+          created_at: new Date().toISOString()
+        })
+
+      if (logError) {
+        console.error('Failed to log token refill:', logError)
+      }
+
+      console.log(`✅ Token refilled for user ${userId}: +1 token (${reason})`)
+    } catch (error) {
+      console.error('Failed to refill token:', error)
       throw error
     }
   }
@@ -275,17 +380,24 @@ export class GameService {
   // retry_token 소모
   private async consumeRetryToken(userId: string, reason: string): Promise<void> {
     try {
-      const tokens = await this.getUserTokens(userId)
+      // 기본 토큰 정보만 가져오기 (추천 보상 제외)
+      const { data: baseTokens, error: fetchError } = await this.supabase
+        .from('user_tokens')
+        .select('retry_tokens')
+        .eq('user_id', userId)
+        .single()
+
+      if (fetchError) throw fetchError
       
-      if (tokens.retry_tokens <= 0) {
+      if (baseTokens.retry_tokens <= 0) {
         throw new Error('토큰이 부족합니다.')
       }
 
-      // 토큰 차감
+      // 기본 토큰 차감
       const { error: updateError } = await this.supabase
         .from('user_tokens')
         .update({ 
-          retry_tokens: tokens.retry_tokens - 1,
+          retry_tokens: baseTokens.retry_tokens - 1,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', userId)
@@ -298,7 +410,6 @@ export class GameService {
         .insert({
           user_id: userId,
           delta: -1,
-          kind: 'spend',
           reason: reason
         })
 
@@ -336,7 +447,6 @@ export class GameService {
         .insert({
           user_id: userId,
           delta: amount,
-          kind: 'earn',
           reason: reason,
           meta: meta
         })
@@ -416,6 +526,97 @@ export class GameService {
       }
     } catch (error) {
       console.error('Failed to get user game stats:', error)
+      throw error
+    }
+  }
+
+  // 추천인 보상 처리 (토큰 + 한도 증가)
+  async processReferralReward(referrerId: string, refereeId: string, referralCode: string): Promise<void> {
+    try {
+      const rewardAmount = 3 // +3 tokens
+      const limitBonus = 3 // +3 limit increase
+
+      // 추천인 보상 (토큰 + 한도)
+      const { error: referrerError } = await this.supabase
+        .from('user_tokens')
+        .update({
+          retry_tokens: this.supabase.raw('retry_tokens + ?', [rewardAmount]),
+          referral_tokens: this.supabase.raw('referral_tokens + ?', [rewardAmount]),
+          daily_limit: this.supabase.raw('COALESCE(daily_limit, 15) + ?', [limitBonus]),
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', referrerId)
+
+      if (referrerError) throw referrerError
+
+      // 피추천인 보상 (토큰 + 한도)
+      const { error: refereeError } = await this.supabase
+        .from('user_tokens')
+        .update({
+          retry_tokens: this.supabase.raw('retry_tokens + ?', [rewardAmount]),
+          daily_limit: this.supabase.raw('COALESCE(daily_limit, 15) + ?', [limitBonus]),
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', refereeId)
+
+      if (refereeError) throw refereeError
+
+      // 추천 관계 기록
+      const { error: relationshipError } = await this.supabase
+        .from('referral_relationships')
+        .insert({
+          referrer_id: referrerId,
+          referee_id: refereeId,
+          referral_code: referralCode
+        })
+
+      if (relationshipError) throw relationshipError
+
+      // 보상 기록
+      const { error: rewardError } = await this.supabase
+        .from('referral_rewards')
+        .insert({
+          referrer_id: referrerId,
+          referee_id: refereeId,
+          referrer_tokens: rewardAmount,
+          referee_tokens: rewardAmount
+        })
+
+      if (rewardError) throw rewardError
+
+      // 토큰 로그 기록
+      const { error: referrerLogError } = await this.supabase
+        .from('token_logs')
+        .insert({
+          user_id: referrerId,
+          delta: rewardAmount,
+          reason: 'referral_reward',
+          meta: JSON.stringify({
+            referee_id: refereeId,
+            code: referralCode,
+            limit_bonus: limitBonus
+          })
+        })
+
+      if (referrerLogError) throw referrerLogError
+
+      const { error: refereeLogError } = await this.supabase
+        .from('token_logs')
+        .insert({
+          user_id: refereeId,
+          delta: rewardAmount,
+          reason: 'referral_signup',
+          meta: JSON.stringify({
+            referrer_id: referrerId,
+            code: referralCode,
+            limit_bonus: limitBonus
+          })
+        })
+
+      if (refereeLogError) throw refereeLogError
+
+    } catch (error) {
+      console.error('Failed to process referral reward:', error)
       throw error
     }
   }

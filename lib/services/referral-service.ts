@@ -32,8 +32,8 @@ export class ReferralService {
   async getUserReferralCode(userId: string): Promise<string> {
     try {
       const { data, error } = await this.supabase
-        .from('referral_codes')
-        .select('code')
+        .from('user_referral_codes')
+        .select('referral_code')
         .eq('user_id', userId)
         .single()
 
@@ -45,7 +45,7 @@ export class ReferralService {
         throw error
       }
 
-      return data.code
+      return data.referral_code
     } catch (error) {
       console.error('Failed to get user referral code:', error)
       throw error
@@ -65,9 +65,9 @@ export class ReferralService {
 
         // 중복 체크
         const { data: existing } = await this.supabase
-          .from('referral_codes')
-          .select('code')
-          .eq('code', code)
+          .from('user_referral_codes')
+          .select('referral_code')
+          .eq('referral_code', code)
           .single()
 
         if (!existing) {
@@ -82,10 +82,10 @@ export class ReferralService {
 
       // 코드 저장
       const { error } = await this.supabase
-        .from('referral_codes')
+        .from('user_referral_codes')
         .insert({
           user_id: userId,
-          code: code
+          referral_code: code
         })
 
       if (error) throw error
@@ -97,11 +97,48 @@ export class ReferralService {
     }
   }
 
-  // 랜덤 코드 생성 (6자리 영숫자)
+  // 추천코드 유효성 검증
+  async validateReferralCode(referralCode: string): Promise<{ valid: boolean; referrerId?: string }> {
+    try {
+      const { data, error } = await this.supabase
+        .from('user_referral_codes')
+        .select('user_id')
+        .eq('referral_code', referralCode.toUpperCase())
+        .single()
+
+      if (error || !data) {
+        return { valid: false }
+      }
+
+      return { valid: true, referrerId: data.user_id }
+    } catch (error) {
+      console.error('Failed to validate referral code:', error)
+      return { valid: false }
+    }
+  }
+
+  // 추천코드 생성 (외부에서 호출용)
+  async createReferralCode(userId: string, code: string): Promise<void> {
+    try {
+      const { error } = await this.supabase
+        .from('user_referral_codes')
+        .insert({
+          user_id: userId,
+          referral_code: code
+        })
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Failed to create referral code:', error)
+      throw error
+    }
+  }
+
+  // 랜덤 코드 생성 (8자리 영숫자)
   private generateRandomCode(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     let result = ''
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 8; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length))
     }
     return result
@@ -111,47 +148,37 @@ export class ReferralService {
   async handleReferralSignup(refereeId: string, referralCode: string): Promise<void> {
     try {
       // 추천 코드 유효성 검사
-      const { data: referralCodeData, error: codeError } = await this.supabase
-        .from('referral_codes')
+      const { data: referralData, error: validateError } = await this.supabase
+        .from('user_referral_codes')
         .select('user_id')
-        .eq('code', referralCode.toUpperCase())
+        .eq('referral_code', referralCode.toUpperCase())
         .single()
 
-      if (codeError || !referralCodeData) {
-        throw new Error('유효하지 않은 추천 코드입니다.')
+      if (validateError || !referralData) {
+        throw new Error('Invalid referral code')
       }
 
-      const referrerId = referralCodeData.user_id
+      const referrerId = referralData.user_id
 
       // 자기 자신을 추천할 수 없음
       if (referrerId === refereeId) {
-        throw new Error('자기 자신의 추천 코드는 사용할 수 없습니다.')
+        throw new Error('Cannot refer yourself')
       }
 
-      // 이미 추천받은 유저인지 확인
+      // 이미 추천받은 적이 있는지 확인
       const { data: existingReferral } = await this.supabase
-        .from('referrals')
+        .from('referral_relationships')
         .select('id')
         .eq('referee_id', refereeId)
         .single()
 
       if (existingReferral) {
-        throw new Error('이미 추천을 받으신 계정입니다.')
+        throw new Error('User has already been referred')
       }
 
-      // 추천 관계 생성
-      const { error: referralError } = await this.supabase
-        .from('referrals')
-        .insert({
-          referrer_id: referrerId,
-          referee_id: refereeId,
-          code: referralCode.toUpperCase()
-        })
-
-      if (referralError) throw referralError
-
-      // 보상 지급 (추천인과 피추천인 모두)
-      await this.giveReferralRewards(referrerId, refereeId)
+      // 게임 서비스를 통한 추천인 보상 처리 (토큰 + 한도 증가)
+      const { gameService } = await import('./game-service')
+      await gameService.processReferralReward(referrerId, refereeId, referralCode.toUpperCase())
 
     } catch (error) {
       console.error('Failed to handle referral signup:', error)
@@ -159,66 +186,35 @@ export class ReferralService {
     }
   }
 
-  // 추천 보상 지급
-  private async giveReferralRewards(referrerId: string, refereeId: string): Promise<void> {
-    try {
-      // 추천인에게 보상
-      await gameService.giveTokens(
-        referrerId,
-        GAME_CONSTANTS.REFERRAL_REWARD,
-        'referral_reward',
-        { referee_id: refereeId }
-      )
-
-      // 피추천인에게 보상
-      await gameService.giveTokens(
-        refereeId,
-        GAME_CONSTANTS.REFERRAL_REWARD,
-        'referral_signup',
-        { referrer_id: referrerId }
-      )
-
-    } catch (error) {
-      console.error('Failed to give referral rewards:', error)
-      throw error
-    }
-  }
-
-  // 유저의 추천 통계 가져오기
+  // 추천인 통계 조회
   async getReferralStats(userId: string): Promise<ReferralStats> {
     try {
-      // 전체 추천 수
-      const { data: allReferrals, error: allError } = await this.supabase
-        .from('referrals')
-        .select('id, created_at')
+      const { data: referralStats, error } = await this.supabase
+        .from('referral_rewards')
+        .select(`
+          referrer_tokens,
+          referee_tokens,
+          created_at
+        `)
         .eq('referrer_id', userId)
 
-      if (allError) throw allError
+      if (error) throw error
 
-      const totalReferrals = allReferrals?.length || 0
-
+      const totalReferrals = referralStats?.length || 0
+      const totalRewards = referralStats?.reduce((sum, reward) => sum + reward.referrer_tokens, 0) || 0
+      
       // 이번 달 추천 수
       const thisMonth = new Date()
       thisMonth.setDate(1)
       thisMonth.setHours(0, 0, 0, 0)
-
-      const thisMonthReferrals = allReferrals?.filter(r => 
-        new Date(r.created_at) >= thisMonth
+      
+      const thisMonthReferrals = referralStats?.filter(
+        reward => new Date(reward.created_at) >= thisMonth
       ).length || 0
-
-      // 토큰 로그에서 추천 보상 계산
-      const { data: rewardLogs, error: rewardError } = await this.supabase
-        .from('token_logs')
-        .select('delta, created_at')
-        .eq('user_id', userId)
-        .eq('reason', 'referral_reward')
-
-      if (rewardError) throw rewardError
-
-      const totalRewards = rewardLogs?.reduce((sum, log) => sum + log.delta, 0) || 0
-      const thisMonthRewards = rewardLogs?.filter(log =>
-        new Date(log.created_at) >= thisMonth
-      ).reduce((sum, log) => sum + log.delta, 0) || 0
+      
+      const thisMonthRewards = referralStats?.filter(
+        reward => new Date(reward.created_at) >= thisMonth
+      ).reduce((sum, reward) => sum + reward.referrer_tokens, 0) || 0
 
       return {
         totalReferrals,
@@ -226,12 +222,24 @@ export class ReferralService {
         thisMonthReferrals,
         thisMonthRewards
       }
-
     } catch (error) {
       console.error('Failed to get referral stats:', error)
       throw error
     }
   }
+
+  // 추천인 링크 생성
+  generateReferralLink(referralCode: string): string {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    return `${baseUrl}/?ref=${referralCode}`
+  }
+
+  // URL에서 추천코드 추출
+  extractReferralCodeFromUrl(url: string): string | null {
+    const urlObj = new URL(url)
+    return urlObj.searchParams.get('ref')
+  }
+
 
   // 추천한 유저 목록 가져오기
   async getReferredUsers(userId: string, limit: number = 20): Promise<Array<{
@@ -271,40 +279,6 @@ export class ReferralService {
     }
   }
 
-  // 추천 링크 생성
-  generateReferralLink(code: string, baseUrl: string = ''): string {
-    const url = baseUrl || (typeof window !== 'undefined' ? window.location.origin : '')
-    return `${url}/?ref=${code}`
-  }
-
-  // 추천 코드 유효성 검사
-  async validateReferralCode(code: string): Promise<{
-    isValid: boolean
-    referrerId?: string
-    error?: string
-  }> {
-    try {
-      if (!code || code.length !== 6) {
-        return { isValid: false, error: '추천 코드는 6자리여야 합니다.' }
-      }
-
-      const { data, error } = await this.supabase
-        .from('referral_codes')
-        .select('user_id')
-        .eq('code', code.toUpperCase())
-        .single()
-
-      if (error || !data) {
-        return { isValid: false, error: '존재하지 않는 추천 코드입니다.' }
-      }
-
-      return { isValid: true, referrerId: data.user_id }
-
-    } catch (error) {
-      console.error('Failed to validate referral code:', error)
-      return { isValid: false, error: '추천 코드 확인 중 오류가 발생했습니다.' }
-    }
-  }
 
   // 월별 추천 보상 지급 (관리자용)
   async processMonthlyRewards(year: number, month: number): Promise<void> {

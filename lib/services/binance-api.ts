@@ -35,7 +35,7 @@ export interface TickerData {
 }
 
 class BinanceAPI {
-  private baseUrl = 'https://data-api.binance.vision/api/v3'
+  private baseUrl = 'https://api.binance.com/api/v3'
   private wsUrl = 'wss://stream.binance.com:9443/ws'
 
   // 캔들스틱 데이터 가져오기
@@ -46,21 +46,26 @@ class BinanceAPI {
   ): Promise<CandleData[]> {
     try {
       const url = `${this.baseUrl}/klines?symbol=${symbol.toUpperCase()}&interval=${interval}&limit=${limit}`
+      console.log('Fetching klines from:', url)
       const response = await fetch(url)
       
       if (!response.ok) {
+        console.error(`Binance API error: ${response.status} ${response.statusText}`)
         throw new Error(`Binance API error: ${response.status}`)
       }
 
-      const data: BinanceKline[] = await response.json()
+      const data = await response.json()
+      console.log(`📊 Raw API response for ${symbol}:`, data.slice(0, 2)) // 처음 2개만 로깅
+      console.log(`Received ${data.length} candles for ${symbol}`)
       
-      return data.map(kline => ({
-        time: Math.floor(kline.openTime / 1000), // 초 단위로 변환
-        open: parseFloat(kline.open),
-        high: parseFloat(kline.high),
-        low: parseFloat(kline.low),
-        close: parseFloat(kline.close),
-        volume: parseFloat(kline.volume),
+      // Binance API는 배열 형태로 응답: [timestamp, open, high, low, close, volume, ...]
+      return data.map((kline: any[]) => ({
+        time: Math.floor(kline[0] / 1000), // 초 단위로 변환
+        open: parseFloat(kline[1]),
+        high: parseFloat(kline[2]),
+        low: parseFloat(kline[3]),
+        close: parseFloat(kline[4]),
+        volume: parseFloat(kline[5]),
       }))
     } catch (error) {
       console.error('Failed to fetch Binance klines:', error)
@@ -255,8 +260,8 @@ class BinanceAPI {
   // 게임용 랜덤 차트 데이터 가져오기
   async getRandomGameChart(
     symbol?: string,
-    previewDays: number = 5,
-    totalDays: number = 10
+    previewDays: number = 40,
+    totalDays: number = 60
   ): Promise<{
     symbol: string
     preview_candles: CandleData[]
@@ -266,9 +271,11 @@ class BinanceAPI {
     try {
       // 랜덤 심볼 선택
       const selectedSymbol = symbol || this.getRandomSymbol()
+      console.log('🎯 Attempting to fetch real data for symbol:', selectedSymbol)
       
       // 일봉 데이터 가져오기 (더 많은 데이터를 가져와서 랜덤 구간 선택)
       const allCandles = await this.getKlines(selectedSymbol, '1d', 365)
+      console.log('📈 Received real candles:', allCandles.length)
       
       if (allCandles.length < totalDays) {
         throw new Error('Insufficient historical data')
@@ -288,8 +295,67 @@ class BinanceAPI {
         full_data: gameData
       }
     } catch (error) {
-      console.error('Failed to fetch random game chart:', error)
-      throw error
+      console.error('❌ Failed to fetch random game chart:', error)
+      console.log('🔄 Falling back to dummy data...')
+      
+      // API 호출 실패 시 더미 데이터 생성
+      const dummyData = this.generateDummyData(totalDays, previewDays)
+      console.log('✅ Dummy data generated:', {
+        symbol: dummyData.symbol,
+        fullDataLength: dummyData.full_data.length,
+        previewLength: dummyData.preview_candles.length,
+        firstCandle: dummyData.full_data[0],
+        lastCandle: dummyData.full_data[dummyData.full_data.length - 1]
+      })
+      return dummyData
+    }
+  }
+
+  // 더미 데이터 생성 함수
+  private generateDummyData(totalDays: number = 60, previewDays: number = 40): {
+    symbol: string
+    preview_candles: CandleData[]
+    answer_candles: CandleData[]
+    full_data: CandleData[]
+  } {
+    console.log('🎲 Generating dummy data:', { totalDays, previewDays })
+    const basePrice = 50000 // 기본 가격 (BTC 기준)
+    const gameData: CandleData[] = []
+    let currentPrice = basePrice
+    
+    for (let i = 0; i < totalDays; i++) {
+      // 랜덤 가격 변동 (-5% ~ +5%)
+      const change = (Math.random() - 0.5) * 0.1
+      const open = currentPrice
+      const close = open * (1 + change)
+      const high = Math.max(open, close) * (1 + Math.random() * 0.02)
+      const low = Math.min(open, close) * (1 - Math.random() * 0.02)
+      
+      const candleData = {
+        time: Date.now() - (totalDays - i) * 24 * 60 * 60 * 1000, // 일봉 기준
+        open,
+        high,
+        low,
+        close,
+        volume: Math.random() * 1000000
+      }
+      
+      gameData.push(candleData)
+      
+      if (i < 3) {
+        console.log(`🕯️ Generated candle ${i}:`, candleData)
+      }
+      
+      currentPrice = close
+    }
+    
+    console.log('✅ Dummy data generation completed:', gameData.length, 'candles')
+    
+    return {
+      symbol: 'BTCUSDT',
+      preview_candles: gameData.slice(0, previewDays),
+      answer_candles: gameData.slice(previewDays),
+      full_data: gameData
     }
   }
 

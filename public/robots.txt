@@ -1,0 +1,91 @@
+# ErrdayCoin - Crypto Futures Trading Simulator
+# https://errdaycoin.com
+
+# Allow all search engines to crawl the site
+User-agent: *
+Allow: /
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1
+
+User-agent: DuckDuckBot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 2
+
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 2
+
+# Block access to sensitive areas
+User-agent: *
+Disallow: /api/
+Disallow: /admin/
+Disallow: /private/
+Disallow: /test-db/
+Disallow: /auth/
+Disallow: /result/
+Disallow: /_next/
+Disallow: /_vercel/
+Disallow: /node_modules/
+
+# Block access to user-specific data
+Disallow: /dashboard/
+Disallow: /portfolio/
+Disallow: /watchlist/
+
+# Allow important static resources
+User-agent: *
+Allow: /favicon.ico
+Allow: /robots.txt
+Allow: /sitemap.xml
+Allow: /manifest.json
+Allow: /icon-*.png
+Allow: /og-image.jpg
+Allow: /twitter-image.jpg
+Allow: /screenshot-*.png
+
+# Allow CSS and JS files for proper rendering
+Allow: /_next/static/css/
+Allow: /_next/static/js/
+Allow: /_next/static/media/
+
+# Block access to API endpoints that don't need indexing
+User-agent: *
+Disallow: /api/chart/
+Disallow: /api/game/
+Disallow: /api/tokens/
+Disallow: /api/referral/
+Disallow: /api/leaderboard/
+Disallow: /api/community/
+Disallow: /api/portfolio/
+Disallow: /api/watchlist/
+Disallow: /api/daily-reset/
+
+# Allow public pages for SEO
+User-agent: *
+Allow: /
+Allow: /play
+Allow: /leaderboard
+Allow: /community
+Allow: /analysis
+Allow: /legal
+
+# Sitemap location
+Sitemap: https://errdaycoin.com/sitemap.xml
+
+# Host declaration
+Host: https://errdaycoin.com

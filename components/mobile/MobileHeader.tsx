@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import AuthButton from '@/components/AuthButton'
-import LangSwitcher from '@/components/LangSwitcher'
 import MobileNavigation from './MobileNavigation'
 
 interface MobileHeaderProps {
@@ -83,7 +82,6 @@ const MobileHeader = ({ title, showBack = false, actions }: MobileHeaderProps) =
           {/* 기본 액션들 */}
           <div className="flex items-center gap-1">
             <AuthButton />
-            <LangSwitcher />
           </div>
         </div>
       </div>

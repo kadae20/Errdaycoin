@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 
@@ -16,7 +15,6 @@ const AuthButton = ({ className = '' }: AuthButtonProps) => {
   const [email, setEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
-  const { t } = useTranslation()
   const supabase = createClient()
 
   useEffect(() => {
@@ -56,7 +54,7 @@ const AuthButton = ({ className = '' }: AuthButtonProps) => {
       if (error) {
         setMessage(error.message)
       } else {
-        setMessage(t('magic_link_sent'))
+        setMessage('Magic link sent! Check your email.')
         setShowEmailForm(false)
         setEmail('')
       }
@@ -97,7 +95,7 @@ const AuthButton = ({ className = '' }: AuthButtonProps) => {
           onClick={handleSignOut}
           className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
         >
-          {t('logout')}
+          Logout
         </button>
       </div>
     )
@@ -108,13 +106,13 @@ const AuthButton = ({ className = '' }: AuthButtonProps) => {
       {!showEmailForm ? (
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-600">
-            {t('guest_mode')}
+            Guest Mode
           </span>
           <button
             onClick={() => setShowEmailForm(true)}
             className="px-4 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           >
-            {t('login')}
+            Login
           </button>
         </div>
       ) : (
@@ -124,7 +122,7 @@ const AuthButton = ({ className = '' }: AuthButtonProps) => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={t('email')}
+              placeholder="Email"
               required
               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
@@ -133,7 +131,7 @@ const AuthButton = ({ className = '' }: AuthButtonProps) => {
               disabled={isSubmitting}
               className="px-4 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? '...' : t('send_magic_link')}
+              {isSubmitting ? '...' : 'Send Magic Link'}
             </button>
           </div>
           <div className="flex justify-between items-center">

@@ -6,9 +6,10 @@ import { useAuth } from '@/app/providers'
 interface AuthModalProps {
   isOpen: boolean
   onClose: () => void
+  onGuestMode?: () => void
 }
 
-export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, onGuestMode }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -210,6 +211,23 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <p className="text-xs text-gray-500">
               Demo: Use any email and password (6+ chars)
             </p>
+          </div>
+        )}
+
+        {/* Guest Mode Option */}
+        {onGuestMode && (
+          <div className="mt-6 pt-4 border-t border-gray-600">
+            <div className="text-center">
+              <p className="text-gray-400 text-sm mb-3">
+                Want to try without signing up?
+              </p>
+              <button
+                onClick={onGuestMode}
+                className="w-full bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold py-3 px-4 rounded-lg transition-colors"
+              >
+                Continue as Guest
+              </button>
+            </div>
           </div>
         )}
       </div>

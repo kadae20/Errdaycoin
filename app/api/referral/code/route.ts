@@ -69,9 +69,9 @@ export async function POST(request: NextRequest) {
     // 추천 코드 유효성 검사
     const validation = await referralService.validateReferralCode(referralCode)
     
-    if (!validation.isValid) {
+    if (!validation.valid) {
       return NextResponse.json(
-        { error: validation.error },
+        { error: 'Invalid referral code' },
         { status: 400 }
       )
     }

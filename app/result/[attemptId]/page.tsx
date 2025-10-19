@@ -1,12 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import ChartPreview from '@/components/ChartPreview'
 import ScoreBadge from '@/components/ScoreBadge'
-import LangSwitcher from '@/components/LangSwitcher'
 import AuthButton from '@/components/AuthButton'
 import { createClient } from '@/lib/supabase/client'
 import { Candle } from '@/lib/types'
@@ -33,7 +31,6 @@ export default function ResultPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { attemptId } = useParams()
-  const { t } = useTranslation()
   const analytics = useAnalytics()
   const supabase = createClient()
 
@@ -110,7 +107,7 @@ export default function ResultPage() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: t('title'),
+          title: 'ErrdayCoin - Crypto Futures Trading Game',
           text: shareText,
           url: shareUrl,
         })
@@ -143,7 +140,7 @@ export default function ResultPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin h-12 w-12 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('loading')}</p>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     )
@@ -182,12 +179,11 @@ export default function ResultPage() {
             <Link href="/" className="flex items-center gap-2">
               <div className="text-2xl">📈</div>
               <h1 className="text-xl font-bold text-gray-800">
-                {t('title')}
+                ErrdayCoin
               </h1>
             </Link>
             <div className="flex items-center gap-4">
               <AuthButton />
-              <LangSwitcher />
             </div>
           </div>
         </div>
@@ -256,7 +252,7 @@ export default function ResultPage() {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Result:</span>
                   <span className={`font-medium ${attempt.is_correct ? 'text-success' : 'text-danger'}`}>
-                    {attempt.is_correct ? t('correct') : t('wrong')}
+                    {attempt.is_correct ? 'Correct' : 'Wrong'}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -279,15 +275,15 @@ export default function ResultPage() {
               onClick={shareResult}
               className="btn-primary"
             >
-              📤 {t('share_score')}
+              📤 Share Score
             </button>
             
             <Link href="/play" className="btn-primary text-center">
-              🎮 {t('play_again')}
+              🎮 Play Again
             </Link>
             
             <Link href="/leaderboard" className="btn-secondary text-center">
-              🏆 {t('leaderboard')}
+              🏆 Leaderboard
             </Link>
           </div>
 

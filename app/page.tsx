@@ -5,10 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from './providers'
 import AuthModal from '@/components/AuthModal'
 import BitgetBanner, { BitgetFloatingBanner } from '@/components/BitgetBanner'
+import StructuredData from '@/components/StructuredData'
 import { referralService } from '@/lib/services/referral-service'
 
 export default function HomePage() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [showAuthModal, setShowAuthModal] = useState(false)
@@ -21,6 +22,14 @@ export default function HomePage() {
       handleReferralSignup(referralCode)
     }
   }, [user, referralCode])
+
+  // 로그인 후 게임 시작 처리
+  useEffect(() => {
+    if (user && showAuthModal) {
+      setShowAuthModal(false)
+      router.push('/play')
+    }
+  }, [user, showAuthModal, router])
 
   const handleReferralSignup = async (code: string) => {
     try {
@@ -37,12 +46,24 @@ export default function HomePage() {
   }
 
   const startGame = () => {
-    // 게스트 모드로 게임 시작 (로그인 없이)
-    router.push('/play?mode=guest')
+    console.log('Start Game clicked, user:', user)
+    // 로그인 상태 확인
+    if (!user) {
+      // 로그인하지 않은 경우 로그인 모달 표시
+      console.log('No user, showing auth modal')
+      setShowAuthModal(true)
+    } else {
+      // 로그인한 경우 바로 게임 시작
+      console.log('User exists, redirecting to game')
+      router.push('/play')
+    }
   }
 
   return (
     <>
+      {/* Structured Data */}
+      <StructuredData />
+      
       {/* Bitget Banner */}
       <BitgetBanner />
       
@@ -100,7 +121,21 @@ export default function HomePage() {
           </div>
         </div>
         <div className="flex items-center space-x-4">
-          <span className="text-sm text-gray-300 hidden md:block">Free • No Download • Web-based</span>
+          {user ? (
+            <div className="flex items-center space-x-3">
+              <span className="text-sm text-gray-300">
+                Welcome, {user.email?.split('@')[0] || 'User'}
+              </span>
+              <button
+                onClick={logout}
+                className="px-3 py-1 text-sm bg-gray-700 text-gray-300 rounded hover:bg-gray-600"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <span className="text-sm text-gray-300 hidden md:block">Free • No Download • Web-based</span>
+          )}
         </div>
       </nav>
 
@@ -117,6 +152,31 @@ export default function HomePage() {
         <p className="text-lg text-gray-400 mb-8 max-w-2xl">
           Experience position management and risk with up to 100x leverage
         </p>
+        
+        {/* Game Modes */}
+        <div className="bg-gray-800 bg-opacity-60 rounded-xl p-6 mb-8 max-w-4xl">
+          <h3 className="text-xl font-bold text-yellow-400 mb-4">🎮 Two Ways to Play</h3>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-gray-700 bg-opacity-50 p-4 rounded-lg">
+              <h4 className="text-lg font-semibold text-green-400 mb-2">👤 Guest Mode</h4>
+              <ul className="text-sm text-gray-300 space-y-1">
+                <li>• 1 free token to start</li>
+                <li>• Game ends when token runs out</li>
+                <li>• Watch ads to get more chances</li>
+                <li>• Perfect for trying the game</li>
+              </ul>
+            </div>
+            <div className="bg-gray-700 bg-opacity-50 p-4 rounded-lg">
+              <h4 className="text-lg font-semibold text-blue-400 mb-2">🔐 Login Mode</h4>
+              <ul className="text-sm text-gray-300 space-y-1">
+                <li>• 15 tokens + 15 daily limit</li>
+                <li>• Progress saved permanently</li>
+                <li>• Invite friends for +3 tokens each</li>
+                <li>• Daily reset at midnight (US time)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
         
         <div className="flex flex-wrap justify-center gap-4 mb-12 text-sm text-gray-300">
           <div className="flex items-center gap-2">
@@ -144,14 +204,36 @@ export default function HomePage() {
           ⚡ Start Game
         </button>
 
+        {/* How It Works */}
+        <div className="bg-gray-800 bg-opacity-40 rounded-xl p-6 mb-8 max-w-4xl">
+          <h3 className="text-lg font-bold text-yellow-400 mb-4">🎯 How It Works</h3>
+          <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-300">
+            <div className="text-center">
+              <div className="text-2xl mb-2">📈</div>
+              <div className="font-semibold text-white mb-1">1. Analyze Charts</div>
+              <div>Study historical price data and make predictions</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl mb-2">⚖️</div>
+              <div className="font-semibold text-white mb-1">2. Set Position</div>
+              <div>Choose Long/Short, leverage, and position size</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl mb-2">🎲</div>
+              <div className="font-semibold text-white mb-1">3. Reveal Results</div>
+              <div>See if your prediction was correct and earn rewards</div>
+            </div>
+          </div>
+        </div>
+
         <p className="text-sm text-gray-500">
           Futures trading simulator enjoyed by thousands • Completely Free
         </p>
         
         {/* Features Section */}
-        <div className="mt-16 max-w-4xl text-center">
-          <h2 className="text-2xl font-bold text-white mb-6">Why Choose ErrdayCoin?</h2>
-          <div className="grid md:grid-cols-3 gap-6 text-left">
+        <div className="mt-16 max-w-6xl text-center">
+          <h2 className="text-2xl font-bold text-white mb-8">🚀 Key Features</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
             <div className="bg-gray-800 bg-opacity-50 p-6 rounded-lg">
               <h3 className="text-lg font-bold text-yellow-400 mb-3">📊 Real Chart Data</h3>
               <p className="text-gray-300 text-sm">
@@ -167,11 +249,33 @@ export default function HomePage() {
               </p>
             </div>
             <div className="bg-gray-800 bg-opacity-50 p-6 rounded-lg">
-              <h3 className="text-lg font-bold text-yellow-400 mb-3">🎯 Token Reward System</h3>
+              <h3 className="text-lg font-bold text-yellow-400 mb-3">💰 Profit Persistence</h3>
               <p className="text-gray-300 text-sm">
-                Invite friends and earn tokens. 
-                Get tokens to continue playing the game.
+                Login mode saves your profits permanently. 
+                Build your virtual trading account over time.
               </p>
+            </div>
+            <div className="bg-gray-800 bg-opacity-50 p-6 rounded-lg">
+              <h3 className="text-lg font-bold text-yellow-400 mb-3">👥 Friend Referrals</h3>
+              <p className="text-gray-300 text-sm">
+                Invite friends and both get +3 tokens + 3 limit increase. 
+                Win-win referral system for everyone.
+              </p>
+            </div>
+            <div className="bg-gray-800 bg-opacity-50 p-6 rounded-lg">
+              <h3 className="text-lg font-bold text-yellow-400 mb-3">🔄 Daily Reset</h3>
+              <p className="text-gray-300 text-sm">
+                Get fresh tokens every day at midnight (US time). 
+                Never run out of chances to practice.
+              </p>
+            </div>
+            <div className="bg-gray-800 bg-opacity-50 p-6 rounded-lg">
+              <h3 className="text-lg font-bold text-yellow-400 mb-3">📱 Ad Rewards</h3>
+              <p className="text-gray-300 text-sm">
+                Watch short ads to get extra chances. 
+                Both guest and login users can earn more tokens.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -180,19 +284,24 @@ export default function HomePage() {
         <div className="mt-20 pt-8 border-t border-gray-800">
           <p className="text-center text-sm text-gray-500 max-w-2xl mx-auto">
             This is an educational simulation game. No real trading. No financial advice.
-              </p>
-            </div>
-          </div>
+          </p>
+        </div>
+      </div>
 
-      
       {/* Floating Banner */}
       <BitgetFloatingBanner />
-        </div>
     
-    {/* Auth Modal */}
-    {showAuthModal && (
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <AuthModal 
+          isOpen={showAuthModal} 
+          onClose={() => setShowAuthModal(false)}
+          onGuestMode={() => {
+            setShowAuthModal(false)
+            router.push('/play?mode=guest')
+          }}
+        />
       )}
-  </>
+    </>
   )
 }

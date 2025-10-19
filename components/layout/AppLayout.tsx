@@ -5,7 +5,6 @@ import MobileHeader from '@/components/mobile/MobileHeader'
 import BottomTabBar from '@/components/mobile/BottomTabBar'
 import Link from 'next/link'
 import AuthButton from '@/components/AuthButton'
-import LangSwitcher from '@/components/LangSwitcher'
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -113,7 +112,6 @@ const AppLayout = ({ children, title, showBack, actions }: AppLayoutProps) => {
               )}
               
               <AuthButton />
-              <LangSwitcher />
             </div>
           </div>
         </div>

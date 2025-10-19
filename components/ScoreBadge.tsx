@@ -1,6 +1,5 @@
 'use client'
 
-import { useTranslation } from 'react-i18next'
 
 interface ScoreBadgeProps {
   score: number
@@ -15,7 +14,6 @@ const ScoreBadge = ({
   className = '', 
   showAnimation = true 
 }: ScoreBadgeProps) => {
-  const { t } = useTranslation()
 
   const badgeClass = isCorrect 
     ? 'bg-success text-white border-green-600' 
@@ -40,10 +38,10 @@ const ScoreBadge = ({
         </span>
         <div className="text-left">
           <div className="text-lg font-bold">
-            {isCorrect ? t('correct') : t('wrong')}
+            {isCorrect ? 'Correct' : 'Wrong'}
           </div>
           <div className="text-sm opacity-90">
-            {score} {t('points')}
+            {score} points
           </div>
         </div>
       </div>
