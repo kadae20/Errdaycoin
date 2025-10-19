@@ -249,7 +249,7 @@ export class ReferralService {
 
   // 추천인 링크 생성
   generateReferralLink(referralCode: string): string {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://errdaycoin.com'
     return `${baseUrl}/?ref=${referralCode}`
   }
 
