@@ -355,4 +355,25 @@ export class ReferralService {
   }
 }
 
-export const referralService = new ReferralService()
+// Lazy singleton pattern to avoid build-time initialization
+let _referralServiceInstance: ReferralService | null = null
+
+export const getReferralService = () => {
+  if (!_referralServiceInstance) {
+    _referralServiceInstance = new ReferralService()
+  }
+  return _referralServiceInstance
+}
+
+// Backward compatibility
+export const referralService = {
+  getUserReferralCode: (userId: string) => getReferralService().getUserReferralCode(userId),
+  validateReferralCode: (code: string) => getReferralService().validateReferralCode(code),
+  createReferralCode: (userId: string, code: string) => getReferralService().createReferralCode(userId, code),
+  handleReferralSignup: (refereeId: string, code: string) => getReferralService().handleReferralSignup(refereeId, code),
+  getReferralStats: (userId: string) => getReferralService().getReferralStats(userId),
+  getReferredUsers: (userId: string, limit?: number) => getReferralService().getReferredUsers(userId, limit),
+  generateReferralLink: (code: string) => getReferralService().generateReferralLink(code),
+  extractReferralCodeFromUrl: (url: string) => getReferralService().extractReferralCodeFromUrl(url),
+  processMonthlyRewards: (year: number, month: number) => getReferralService().processMonthlyRewards(year, month)
+}

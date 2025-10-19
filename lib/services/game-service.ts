@@ -15,7 +15,12 @@ import {
 } from '@/lib/types/game'
 
 export class GameService {
-  private supabase = createClient()
+  private getSupabase() {
+    return createClient()
+  }
+  
+  // Note: All methods should use this.getSupabase() instead of this.getSupabase()
+  // This ensures Supabase client is created at runtime, not build time
 
   // 새 게임 세션 시작
   async startNewGame(
@@ -37,7 +42,7 @@ export class GameService {
       const gameChart = await binanceAPI.getRandomGameChart(symbol, 5, 15)
       
       // 게임 세션 생성
-      const { data: session, error } = await this.supabase
+      const { data: session, error } = await this.getSupabase()
         .from('game_sessions')
         .insert({
           user_id: userId,
@@ -82,7 +87,7 @@ export class GameService {
       const liquidationPrice = calculateLiquidationPrice(entryPrice, leverage, side, 1000, positionSize)
 
       // 게임 세션 업데이트
-      const { data: session, error } = await this.supabase
+      const { data: session, error } = await this.getSupabase()
         .from('game_sessions')
         .update({
           entry_price: entryPrice,
@@ -117,7 +122,7 @@ export class GameService {
   }> {
     try {
       // 현재 세션 정보 가져오기
-      const { data: currentSession, error: fetchError } = await this.supabase
+      const { data: currentSession, error: fetchError } = await this.getSupabase()
         .from('game_sessions')
         .select('*')
         .eq('id', sessionId)
@@ -182,7 +187,7 @@ export class GameService {
       }
 
       // 세션 업데이트
-      const { data: updatedSession, error: updateError } = await this.supabase
+      const { data: updatedSession, error: updateError } = await this.getSupabase()
         .from('game_sessions')
         .update({
           exit_price: newPrice,
@@ -213,7 +218,7 @@ export class GameService {
   // 포지션 종료
   async closePosition(sessionId: number, exitPrice: number): Promise<GameSession> {
     try {
-      const { data: session, error } = await this.supabase
+      const { data: session, error } = await this.getSupabase()
         .from('game_sessions')
         .update({
           exit_price: exitPrice,
@@ -245,7 +250,7 @@ export class GameService {
   // 유저 토큰 정보 가져오기
   async getUserTokens(userId: string): Promise<UserTokens> {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await this.getSupabase()
         .from('user_tokens')
         .select('*')
         .eq('user_id', userId)
@@ -258,7 +263,7 @@ export class GameService {
           const referralService = new (await import('./referral-service')).ReferralService()
           const referralCode = await referralService.getUserReferralCode(userId)
           
-          const { data: newTokens, error: createError } = await this.supabase
+          const { data: newTokens, error: createError } = await this.getSupabase()
             .from('user_tokens')
             .insert({
               user_id: userId,
@@ -288,7 +293,7 @@ export class GameService {
 
       // 잔액이 리셋되어야 하는 경우 업데이트
       if (resetBalance !== currentBalance) {
-        const { error: updateError } = await this.supabase
+        const { error: updateError } = await this.getSupabase()
           .from('user_tokens')
           .update({
             balance: resetBalance.toFixed(2),
@@ -316,7 +321,7 @@ export class GameService {
   private async getUserReferralBonus(userId: string): Promise<number> {
     try {
       // 추천한 사람 수 + 추천받은 사람 수 (영구적)
-      const { data: referralStats, error } = await this.supabase
+      const { data: referralStats, error } = await this.getSupabase()
         .from('referral_relationships')
         .select('referrer_id, referee_id')
         .or(`referrer_id.eq.${userId},referee_id.eq.${userId}`)
@@ -336,7 +341,7 @@ export class GameService {
   async refillToken(userId: string, reason: string): Promise<void> {
     try {
       // 현재 토큰 수 확인
-      const { data: currentTokens, error: fetchError } = await this.supabase
+      const { data: currentTokens, error: fetchError } = await this.getSupabase()
         .from('user_tokens')
         .select('retry_tokens')
         .eq('user_id', userId)
@@ -345,7 +350,7 @@ export class GameService {
       if (fetchError) throw fetchError
 
       // 토큰 1개 추가
-      const { error: updateError } = await this.supabase
+      const { error: updateError } = await this.getSupabase()
         .from('user_tokens')
         .update({
           retry_tokens: currentTokens.retry_tokens + 1,
@@ -356,7 +361,7 @@ export class GameService {
       if (updateError) throw updateError
 
       // 로그 기록
-      const { error: logError } = await this.supabase
+      const { error: logError } = await this.getSupabase()
         .from('token_logs')
         .insert({
           user_id: userId,
@@ -381,7 +386,7 @@ export class GameService {
   private async consumeRetryToken(userId: string, reason: string): Promise<void> {
     try {
       // 기본 토큰 정보만 가져오기 (추천 보상 제외)
-      const { data: baseTokens, error: fetchError } = await this.supabase
+      const { data: baseTokens, error: fetchError } = await this.getSupabase()
         .from('user_tokens')
         .select('retry_tokens')
         .eq('user_id', userId)
@@ -394,7 +399,7 @@ export class GameService {
       }
 
       // 기본 토큰 차감
-      const { error: updateError } = await this.supabase
+      const { error: updateError } = await this.getSupabase()
         .from('user_tokens')
         .update({ 
           retry_tokens: baseTokens.retry_tokens - 1,
@@ -405,7 +410,7 @@ export class GameService {
       if (updateError) throw updateError
 
       // 로그 기록
-      const { error: logError } = await this.supabase
+      const { error: logError } = await this.getSupabase()
         .from('token_logs')
         .insert({
           user_id: userId,
@@ -431,7 +436,7 @@ export class GameService {
       const tokens = await this.getUserTokens(userId)
 
       // 토큰 추가
-      const { error: updateError } = await this.supabase
+      const { error: updateError } = await this.getSupabase()
         .from('user_tokens')
         .update({ 
           retry_tokens: tokens.retry_tokens + amount,
@@ -442,7 +447,7 @@ export class GameService {
       if (updateError) throw updateError
 
       // 로그 기록
-      const { error: logError } = await this.supabase
+      const { error: logError } = await this.getSupabase()
         .from('token_logs')
         .insert({
           user_id: userId,
@@ -464,7 +469,7 @@ export class GameService {
     limit: number = 20
   ): Promise<GameSession[]> {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await this.getSupabase()
         .from('game_sessions')
         .select('*')
         .eq('user_id', userId)
@@ -489,7 +494,7 @@ export class GameService {
     worstRoi: number
   }> {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await this.getSupabase()
         .from('game_sessions')
         .select('pnl, roi')
         .eq('user_id', userId)
@@ -537,7 +542,7 @@ export class GameService {
       const limitBonus = 3 // +3 limit increase
 
       // 추천인 보상 (토큰 + 한도) - 현재 값 가져온 후 업데이트
-      const { data: referrerData, error: referrerFetchError } = await this.supabase
+      const { data: referrerData, error: referrerFetchError } = await this.getSupabase()
         .from('user_tokens')
         .select('retry_tokens, referral_tokens, daily_limit')
         .eq('user_id', referrerId)
@@ -545,7 +550,7 @@ export class GameService {
 
       if (referrerFetchError) throw referrerFetchError
 
-      const { error: referrerError } = await this.supabase
+      const { error: referrerError } = await this.getSupabase()
         .from('user_tokens')
         .update({
           retry_tokens: (referrerData.retry_tokens || 0) + rewardAmount,
@@ -558,7 +563,7 @@ export class GameService {
       if (referrerError) throw referrerError
 
       // 피추천인 보상 (토큰 + 한도) - 현재 값 가져온 후 업데이트
-      const { data: refereeData, error: refereeFetchError } = await this.supabase
+      const { data: refereeData, error: refereeFetchError } = await this.getSupabase()
         .from('user_tokens')
         .select('retry_tokens, daily_limit')
         .eq('user_id', refereeId)
@@ -566,7 +571,7 @@ export class GameService {
 
       if (refereeFetchError) throw refereeFetchError
 
-      const { error: refereeError } = await this.supabase
+      const { error: refereeError } = await this.getSupabase()
         .from('user_tokens')
         .update({
           retry_tokens: (refereeData.retry_tokens || 0) + rewardAmount,
@@ -578,7 +583,7 @@ export class GameService {
       if (refereeError) throw refereeError
 
       // 추천 관계 기록
-      const { error: relationshipError } = await this.supabase
+      const { error: relationshipError } = await this.getSupabase()
         .from('referral_relationships')
         .insert({
           referrer_id: referrerId,
@@ -589,7 +594,7 @@ export class GameService {
       if (relationshipError) throw relationshipError
 
       // 보상 기록
-      const { error: rewardError } = await this.supabase
+      const { error: rewardError } = await this.getSupabase()
         .from('referral_rewards')
         .insert({
           referrer_id: referrerId,
@@ -601,7 +606,7 @@ export class GameService {
       if (rewardError) throw rewardError
 
       // 토큰 로그 기록
-      const { error: referrerLogError } = await this.supabase
+      const { error: referrerLogError } = await this.getSupabase()
         .from('token_logs')
         .insert({
           user_id: referrerId,
@@ -616,7 +621,7 @@ export class GameService {
 
       if (referrerLogError) throw referrerLogError
 
-      const { error: refereeLogError } = await this.supabase
+      const { error: refereeLogError } = await this.getSupabase()
         .from('token_logs')
         .insert({
           user_id: refereeId,
@@ -638,4 +643,19 @@ export class GameService {
   }
 }
 
-export const gameService = new GameService()
+// Lazy singleton pattern to avoid build-time initialization
+let _gameServiceInstance: GameService | null = null
+
+export const getGameService = () => {
+  if (!_gameServiceInstance) {
+    _gameServiceInstance = new GameService()
+  }
+  return _gameServiceInstance
+}
+
+// Backward compatibility - use getter to ensure lazy initialization
+export const gameService = new Proxy({} as GameService, {
+  get(target, prop) {
+    return (getGameService() as any)[prop]
+  }
+})

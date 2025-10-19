@@ -150,4 +150,19 @@ export class DailyResetService {
   }
 }
 
-export const dailyResetService = new DailyResetService()
+// Lazy singleton pattern to avoid build-time initialization
+let _dailyResetServiceInstance: DailyResetService | null = null
+
+export const getDailyResetService = () => {
+  if (!_dailyResetServiceInstance) {
+    _dailyResetServiceInstance = new DailyResetService()
+  }
+  return _dailyResetServiceInstance
+}
+
+// Backward compatibility - use getter to ensure lazy initialization
+export const dailyResetService = new Proxy({} as DailyResetService, {
+  get(target, prop) {
+    return (getDailyResetService() as any)[prop]
+  }
+})
