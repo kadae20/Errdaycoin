@@ -40,7 +40,7 @@ export default function BitgetBanner({ slot = 'top', className = '' }: BitgetBan
         fingerprint: btoa(fingerprint) // Base64 인코딩
       }
 
-      await supabase.from('clicks').insert(clickData)
+      await supabase.from('clicks').insert(clickData as any)
     } catch (error) {
       console.error('Failed to track banner click:', error)
     }
@@ -141,7 +141,7 @@ export function BitgetSidebarBanner() {
         utm_source: 'errdaycoin',
         utm_medium: 'sidebar_banner',
         utm_campaign: 'futures_game'
-      })
+      } as any)
     } catch (error) {
       console.error('Failed to track sidebar banner click:', error)
     }
@@ -190,7 +190,7 @@ export function BitgetFloatingBanner() {
         utm_source: 'errdaycoin',
         utm_medium: 'floating_banner',
         utm_campaign: 'futures_game'
-      })
+      } as any)
     } catch (error) {
       console.error('Failed to track floating banner click:', error)
     }

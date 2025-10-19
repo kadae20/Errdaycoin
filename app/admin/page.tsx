@@ -23,6 +23,16 @@ interface ClickData {
   user_id?: string
 }
 
+interface Profile {
+  role?: string
+  [key: string]: any
+}
+
+interface TokenLog {
+  delta: number
+  [key: string]: any
+}
+
 export default function AdminPage() {
   const { user } = useAuth()
   const [isAdmin, setIsAdmin] = useState(false)
@@ -49,7 +59,7 @@ export default function AdminPage() {
         .from('profiles')
         .select('role')
         .eq('id', user.id)
-        .single()
+        .single() as { data: Profile | null, error: any }
 
       if (error) {
         console.error('Profile fetch error:', error)
@@ -90,7 +100,7 @@ export default function AdminPage() {
           .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
       ])
 
-      const totalTokensIssued = tokensResult.data?.reduce((sum, log) => sum + log.delta, 0) || 0
+      const totalTokensIssued = (tokensResult.data as TokenLog[])?.reduce((sum, log) => sum + log.delta, 0) || 0
 
       setStats({
         totalUsers: usersResult.count || 0,

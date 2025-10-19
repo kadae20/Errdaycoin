@@ -62,14 +62,14 @@ export default function ResultPage() {
           return
         }
 
-        const quizData = Array.isArray(data.quiz_bank) ? data.quiz_bank[0] : data.quiz_bank
+        const quizData = Array.isArray((data as any).quiz_bank) ? (data as any).quiz_bank[0] : (data as any).quiz_bank
         const attemptData: AttemptData = {
-          id: data.id,
-          choice: data.choice,
-          is_correct: data.is_correct,
-          score: data.score,
-          took_ms: data.took_ms,
-          created_at: data.created_at,
+          id: (data as any).id,
+          choice: (data as any).choice,
+          is_correct: (data as any).is_correct,
+          score: (data as any).score,
+          took_ms: (data as any).took_ms,
+          created_at: (data as any).created_at,
           quiz: {
             symbol: quizData.symbol,
             timeframe: quizData.timeframe,
@@ -83,7 +83,7 @@ export default function ResultPage() {
         analytics.page({ 
           path: `/result/${attemptId}`, 
           title: 'Result',
-          properties: { attemptId, isCorrect: data.is_correct }
+          properties: { attemptId, isCorrect: (data as any).is_correct }
         })
       } catch (err) {
         setError('Failed to load result')

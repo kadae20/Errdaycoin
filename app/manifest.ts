@@ -12,58 +12,20 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: 'portrait',
     categories: ['finance', 'education', 'games'],
     lang: 'en',
-    icons: [
-      {
-        src: '/icon-192.png',
-        sizes: '192x192',
-        type: 'image/png',
-        purpose: 'maskable'
-      },
-      {
-        src: '/icon-512.png',
-        sizes: '512x512',
-        type: 'image/png',
-        purpose: 'maskable'
-      },
-      {
-        src: '/icon-192.png',
-        sizes: '192x192',
-        type: 'image/png',
-        purpose: 'any'
-      },
-      {
-        src: '/icon-512.png',
-        sizes: '512x512',
-        type: 'image/png',
-        purpose: 'any'
-      }
-    ],
-    screenshots: [
-      {
-        src: '/screenshot-1.png',
-        sizes: '1280x720',
-        type: 'image/png'
-      },
-      {
-        src: '/screenshot-2.png',
-        sizes: '750x1334',
-        type: 'image/png'
-      }
-    ],
+    icons: [],
+    screenshots: [],
     shortcuts: [
       {
         name: 'Play Game',
         short_name: 'Play',
         description: 'Start playing the crypto trading simulator',
-        url: '/play',
-        icons: [{ src: '/icon-192.png', sizes: '192x192' }]
+        url: '/play'
       },
       {
         name: 'Leaderboard',
         short_name: 'Leaderboard',
         description: 'View trading leaderboard',
-        url: '/leaderboard',
-        icons: [{ src: '/icon-192.png', sizes: '192x192' }]
+        url: '/leaderboard'
       }
     ]
   }
