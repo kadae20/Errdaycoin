@@ -70,7 +70,7 @@ const AuthButton = ({ className = '' }: AuthButtonProps) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: 'https://errdaycoin.com/auth/callback',
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       })
 
