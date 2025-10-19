@@ -14,19 +14,21 @@ interface SupabaseContextType {
 
 const SupabaseContext = createContext<SupabaseContextType | null>(null)
 
+// 전역 초기화 상태 관리
+let _globalInitialized = false
+
 export function SupabaseProvider({ children }: { children: ReactNode }) {
   const [isConfigured] = useState(isSupabaseConfigured())
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
-  const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
-    if (!isConfigured || initialized) {
+    if (!isConfigured || _globalInitialized) {
       setLoading(false)
       return
     }
 
-    setInitialized(true)
+    _globalInitialized = true
 
     // 초기 사용자 상태 확인
     const checkUser = async () => {

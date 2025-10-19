@@ -15,7 +15,7 @@ const AuthButton = ({ className = '' }: AuthButtonProps) => {
   const [email, setEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
 
   useEffect(() => {
     // Get initial session

@@ -12,7 +12,7 @@ interface BitgetBannerProps {
 export default function BitgetBanner({ slot = 'top', className = '' }: BitgetBannerProps) {
   const { user } = useAuth()
   const [isVisible, setIsVisible] = useState(true)
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
 
   // Bitget 레퍼럴 코드 (실제 코드로 교체 필요)
   const BITGET_REF_CODE = process.env.NEXT_PUBLIC_BITGET_REF_CODE || 'hfna'
@@ -126,7 +126,7 @@ export default function BitgetBanner({ slot = 'top', className = '' }: BitgetBan
 // 사이드바용 작은 배너
 export function BitgetSidebarBanner() {
   const { user } = useAuth()
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
   
   const BITGET_REF_CODE = process.env.NEXT_PUBLIC_BITGET_REF_CODE || 'hfna'
   const BITGET_SIGNUP_URL = `https://www.bitget.com/asia/expressly?languageType=3&channelCode=char&vipCode=${BITGET_REF_CODE}`
@@ -175,7 +175,7 @@ export function BitgetSidebarBanner() {
 export function BitgetFloatingBanner() {
   const [isVisible, setIsVisible] = useState(true)
   const { user } = useAuth()
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
   
   const BITGET_REF_CODE = process.env.NEXT_PUBLIC_BITGET_REF_CODE || 'hfna'
   const BITGET_SIGNUP_URL = `https://www.bitget.com/asia/expressly?languageType=3&channelCode=char&vipCode=${BITGET_REF_CODE}`

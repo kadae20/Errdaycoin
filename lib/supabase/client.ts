@@ -1,29 +1,10 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { getSupabaseClient } from './singleton'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { Database } from '@/lib/types/database'
 
-// Singleton pattern으로 클라이언트 중복 생성 방지
-let _supabaseClient: any = null
-
 // Client-side Supabase client (for use in components)
 export const createClient = () => {
-  if (_supabaseClient) {
-    return _supabaseClient
-  }
-
-  try {
-    // Next.js auth helpers를 사용하여 올바른 클라이언트 생성
-    _supabaseClient = createClientComponentClient<Database>()
-    return _supabaseClient
-  } catch (error) {
-    console.error('Error creating Supabase client:', error)
-    // 에러 발생 시 fallback client 반환
-    _supabaseClient = createSupabaseClient<Database>(
-      'https://placeholder.supabase.co',
-      'placeholder-key'
-    ) as any
-    return _supabaseClient
-  }
+  return getSupabaseClient()
 }
 
 // Direct Supabase client (for use outside of components)
@@ -47,7 +28,7 @@ export const createDirectClient = () => {
     return createSupabaseClient<Database>(
       'https://placeholder.supabase.co', 
       'placeholder-key'
-    )
+    ) as any
   }
 }
 
