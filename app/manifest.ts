@@ -42,14 +42,12 @@ export default function manifest(): MetadataRoute.Manifest {
       {
         src: '/screenshot-1.png',
         sizes: '1280x720',
-        type: 'image/png',
-        label: 'Crypto Trading Game Interface'
+        type: 'image/png'
       },
       {
         src: '/screenshot-2.png',
         sizes: '750x1334',
-        type: 'image/png',
-        label: 'Mobile Trading Game'
+        type: 'image/png'
       }
     ],
     shortcuts: [
