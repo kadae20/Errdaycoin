@@ -3,7 +3,9 @@
 import { createClient } from '@/lib/supabase/server'
 
 export class DailyResetService {
-  private supabase = createClient()
+  private getSupabase() {
+    return createClient()
+  }
 
   // 미국 시간대 확인 및 리셋 필요 여부 판단
   async checkAndResetDailyTokens(): Promise<void> {
@@ -34,8 +36,9 @@ export class DailyResetService {
   // 모든 사용자 토큰 리셋 (추천 보상 유지)
   private async resetAllUserTokens(): Promise<void> {
     try {
+      const supabase = this.getSupabase()
       // 모든 사용자에 대해 개별적으로 리셋 (추천 보상 포함)
-      const { data: allUsers, error: fetchError } = await this.supabase
+      const { data: allUsers, error: fetchError } = await supabase
         .from('user_tokens')
         .select('user_id')
         .neq('user_id', 'guest') // 게스트 제외
@@ -57,12 +60,13 @@ export class DailyResetService {
   // 특정 사용자의 토큰 리셋 (한도만큼 채워주기)
   async resetUserTokens(userId: string): Promise<void> {
     try {
+      const supabase = this.getSupabase()
       // 사용자의 추천 보상 토큰 수 계산 (영구적)
       const referralBonus = await this.getUserReferralBonus(userId)
       const dailyLimit = 15 + referralBonus // 기본 15 + 추천 보상 = 일일 한도
 
       // 잔액 확인 및 리셋
-      const { data: userTokens, error: fetchError } = await this.supabase
+      const { data: userTokens, error: fetchError} = await supabase
         .from('user_tokens')
         .select('balance')
         .eq('user_id', userId)
@@ -74,7 +78,7 @@ export class DailyResetService {
       const resetBalance = currentBalance >= 1000 ? currentBalance : 1000
 
       // 토큰을 일일 한도만큼 채워주기 (사용량과 상관없이)
-      const { error: updateError } = await this.supabase
+      const { error: updateError } = await supabase
         .from('user_tokens')
         .update({
           retry_tokens: dailyLimit, // 일일 한도만큼 채워주기 (10/45 → 45/45)
@@ -95,8 +99,9 @@ export class DailyResetService {
   // 사용자의 추천 보상 토큰 수 계산
   private async getUserReferralBonus(userId: string): Promise<number> {
     try {
+      const supabase = this.getSupabase()
       // 추천한 사람 수 + 추천받은 사람 수
-      const { data: referralStats, error } = await this.supabase
+      const { data: referralStats, error } = await supabase
         .from('referral_relationships')
         .select('referrer_id, referee_id')
         .or(`referrer_id.eq.${userId},referee_id.eq.${userId}`)
@@ -120,7 +125,8 @@ export class DailyResetService {
     total_tokens: number
   }> {
     try {
-      const { data: userTokens, error } = await this.supabase
+      const supabase = this.getSupabase()
+      const { data: userTokens, error } = await supabase
         .from('user_tokens')
         .select('retry_tokens, balance')
         .eq('user_id', userId)
