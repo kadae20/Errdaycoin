@@ -26,12 +26,15 @@ export interface ReferralStats {
 }
 
 export class ReferralService {
-  private supabase = createClient()
+  private getSupabase() {
+    return createClient()
+  }
 
   // 유저의 추천 코드 가져오기
   async getUserReferralCode(userId: string): Promise<string> {
     try {
-      const { data, error } = await this.supabase
+      const supabase = this.getSupabase()
+      const { data, error } = await supabase
         .from('user_referral_codes')
         .select('referral_code')
         .eq('user_id', userId)
@@ -55,6 +58,7 @@ export class ReferralService {
   // 새로운 추천 코드 생성
   private async generateReferralCode(userId: string): Promise<string> {
     try {
+      const supabase = this.getSupabase()
       let code: string
       let attempts = 0
       const maxAttempts = 10
@@ -64,7 +68,7 @@ export class ReferralService {
         attempts++
 
         // 중복 체크
-        const { data: existing } = await this.supabase
+        const { data: existing } = await supabase
           .from('user_referral_codes')
           .select('referral_code')
           .eq('referral_code', code)
@@ -81,7 +85,7 @@ export class ReferralService {
       } while (true)
 
       // 코드 저장
-      const { error } = await this.supabase
+      const { error } = await supabase
         .from('user_referral_codes')
         .insert({
           user_id: userId,
@@ -100,7 +104,8 @@ export class ReferralService {
   // 추천코드 유효성 검증
   async validateReferralCode(referralCode: string): Promise<{ valid: boolean; referrerId?: string }> {
     try {
-      const { data, error } = await this.supabase
+      const supabase = this.getSupabase()
+      const { data, error } = await supabase
         .from('user_referral_codes')
         .select('user_id')
         .eq('referral_code', referralCode.toUpperCase())
@@ -120,7 +125,8 @@ export class ReferralService {
   // 추천코드 생성 (외부에서 호출용)
   async createReferralCode(userId: string, code: string): Promise<void> {
     try {
-      const { error } = await this.supabase
+      const supabase = this.getSupabase()
+      const { error } = await supabase
         .from('user_referral_codes')
         .insert({
           user_id: userId,
@@ -147,8 +153,9 @@ export class ReferralService {
   // 추천 코드로 회원가입 처리
   async handleReferralSignup(refereeId: string, referralCode: string): Promise<void> {
     try {
+      const supabase = this.getSupabase()
       // 추천 코드 유효성 검사
-      const { data: referralData, error: validateError } = await this.supabase
+      const { data: referralData, error: validateError } = await supabase
         .from('user_referral_codes')
         .select('user_id')
         .eq('referral_code', referralCode.toUpperCase())
@@ -166,7 +173,7 @@ export class ReferralService {
       }
 
       // 이미 추천받은 적이 있는지 확인
-      const { data: existingReferral } = await this.supabase
+      const { data: existingReferral } = await supabase
         .from('referral_relationships')
         .select('id')
         .eq('referee_id', refereeId)
@@ -189,7 +196,8 @@ export class ReferralService {
   // 추천인 통계 조회
   async getReferralStats(userId: string): Promise<ReferralStats> {
     try {
-      const { data: referralStats, error } = await this.supabase
+      const supabase = this.getSupabase()
+      const { data: referralStats, error } = await supabase
         .from('referral_rewards')
         .select(`
           referrer_tokens,
@@ -250,7 +258,8 @@ export class ReferralService {
     nickname?: string
   }>> {
     try {
-      const { data, error } = await this.supabase
+      const supabase = this.getSupabase()
+      const { data, error } = await supabase
         .from('referrals')
         .select(`
           id,
@@ -283,11 +292,12 @@ export class ReferralService {
   // 월별 추천 보상 지급 (관리자용)
   async processMonthlyRewards(year: number, month: number): Promise<void> {
     try {
+      const supabase = this.getSupabase()
       const startDate = new Date(year, month - 1, 1)
       const endDate = new Date(year, month, 1)
 
       // 해당 월의 추천 데이터 가져오기
-      const { data: referrals, error } = await this.supabase
+      const { data: referrals, error } = await supabase
         .from('referrals')
         .select('referrer_id')
         .gte('created_at', startDate.toISOString())
@@ -314,7 +324,7 @@ export class ReferralService {
           )
 
           // 보상 기록
-          await this.supabase
+          await supabase
             .from('referral_rewards')
             .upsert({
               referee_id: referrerId,
