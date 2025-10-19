@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from './providers'
 import AuthModal from '@/components/AuthModal'
 import BitgetBanner, { BitgetFloatingBanner } from '@/components/BitgetBanner'
+import { ResponsiveAd, BannerAd } from '@/components/GoogleAdSense'
 import StructuredData from '@/components/StructuredData'
 import { referralService } from '@/lib/services/referral-service'
 
@@ -285,6 +286,13 @@ export default function HomePage() {
           <p className="text-center text-sm text-gray-500 max-w-2xl mx-auto">
             This is an educational simulation game. No real trading. No financial advice.
           </p>
+        </div>
+      </div>
+
+      {/* 하단 광고 */}
+      <div className="bg-white py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <ResponsiveAd />
         </div>
       </div>
 

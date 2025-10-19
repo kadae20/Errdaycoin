@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import ErrdayCoinGame from '@/components/ErrdayCoinGame'
 import AuthModal from '@/components/AuthModal'
+import { SidebarAd, BannerAd } from '@/components/GoogleAdSense'
 import { useAuth } from '@/app/providers'
 import { referralService } from '@/lib/services/referral-service'
 
@@ -55,12 +56,33 @@ export default function PlayPageClient() {
   }
 
   return (
-    <>
-      <ErrdayCoinGame 
-        onShowAuth={handleShowAuth}
-        onGameComplete={handleGameComplete}
-        isGuestMode={isGuestMode}
-      />
+    <div className="min-h-screen bg-gray-50">
+      {/* 상단 배너 광고 */}
+      <BannerAd className="w-full" />
+      
+      <div className="flex max-w-7xl mx-auto px-4 py-6">
+        {/* 왼쪽 사이드바 광고 */}
+        <div className="hidden lg:block w-48 mr-6">
+          <SidebarAd className="sticky top-6" />
+        </div>
+        
+        {/* 메인 게임 영역 */}
+        <div className="flex-1">
+          <ErrdayCoinGame 
+            onShowAuth={handleShowAuth}
+            onGameComplete={handleGameComplete}
+            isGuestMode={isGuestMode}
+          />
+        </div>
+        
+        {/* 오른쪽 사이드바 광고 */}
+        <div className="hidden lg:block w-48 ml-6">
+          <SidebarAd className="sticky top-6" />
+        </div>
+      </div>
+      
+      {/* 하단 배너 광고 */}
+      <BannerAd className="w-full" />
       
       {showAuthModal && (
         <AuthModal 
@@ -72,6 +94,6 @@ export default function PlayPageClient() {
           }}
         />
       )}
-    </>
+    </div>
   )
 }
