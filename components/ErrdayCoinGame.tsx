@@ -241,16 +241,16 @@ export default function ErrdayCoinGame({ onShowAuth, onGameComplete, isGuestMode
   // 게임 초기화
   useEffect(() => {
     const initializeGameAsync = async () => {
-      console.log('🎮 Game initialization useEffect triggered:', { user: !!user, isGuestMode })
-      
-      if (user || isGuestMode) {
+    console.log('🎮 Game initialization useEffect triggered:', { user: !!user, isGuestMode })
+    
+    if (user || isGuestMode) {
         // 먼저 저장된 상태가 있는지 확인
         const hasRestoredState = loadGameState()
         
         if (!hasRestoredState) {
           console.log('✅ No saved state, calling initializeGame...')
           await initializeGame()
-          if (user) {
+      if (user) {
             await loadUserData()
           }
         } else {
@@ -258,10 +258,10 @@ export default function ErrdayCoinGame({ onShowAuth, onGameComplete, isGuestMode
           if (user) {
             await loadUserData()
           }
-        }
-      } else {
-        console.log('❌ Conditions not met for game initialization')
       }
+    } else {
+      console.log('❌ Conditions not met for game initialization')
+    }
     }
     
     initializeGameAsync()
@@ -566,7 +566,7 @@ export default function ErrdayCoinGame({ onShowAuth, onGameComplete, isGuestMode
         startIndex: 0,
         endIndex: initialEndIndex
       })
-      
+
       // 차트 렌더링
       setTimeout(() => {
         drawChartWithData(gameData.full_data, gameData.preview_candles.length - 1, 0, initialEndIndex)
@@ -593,7 +593,7 @@ export default function ErrdayCoinGame({ onShowAuth, onGameComplete, isGuestMode
         tokens,
         referralCode
       })
-      
+
       setGameState(prev => ({
         ...prev,
         userTokens: tokens,
@@ -822,7 +822,7 @@ export default function ErrdayCoinGame({ onShowAuth, onGameComplete, isGuestMode
         const liquidationPrice = calculateLiquidationPrice(
           avgEntryPrice,
           gameSettings.leverage,
-          positionSide,
+        positionSide,
           1000, // 교차 마진 모드 잔고
           totalNotionalSize
         )

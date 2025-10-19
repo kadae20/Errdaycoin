@@ -3,14 +3,13 @@ import { createClient } from '@supabase/supabase-js'
 import { AddToWatchlistRequestSchema, GetWatchlistResponse } from '@/lib/types/market'
 import { Database } from '@/lib/types/database'
 
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key"
-)
-
 // 관심종목 목록 가져오기
 export async function GET(request: NextRequest) {
   try {
+    const supabase = createClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
+      process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key"
+    )
     const authHeader = request.headers.get('authorization')
     
     if (!authHeader?.startsWith('Bearer ')) {
@@ -99,6 +98,10 @@ export async function GET(request: NextRequest) {
 // 관?�종목에 추�?
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
+      process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key"
+    )
     const authHeader = request.headers.get('authorization')
     
     if (!authHeader?.startsWith('Bearer ')) {

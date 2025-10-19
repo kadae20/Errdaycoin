@@ -3,13 +3,12 @@ import { createClient } from '@supabase/supabase-js'
 import { GetLeaderboardRequestSchema, GetLeaderboardResponseSchema } from '@/lib/types'
 import { Database } from '@/lib/types/database'
 
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key"
-)
-
 export async function GET(request: NextRequest) {
   try {
+    const supabase = createClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
+      process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key"
+    )
     // Parse query parameters
     const { searchParams } = new URL(request.url)
     const queryParams = {

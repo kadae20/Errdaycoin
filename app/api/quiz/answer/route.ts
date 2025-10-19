@@ -5,13 +5,12 @@ import { rateLimit, getClientIP } from '@/lib/utils/rate-limit'
 import { calculateScore } from '@/lib/utils/scoring'
 import { Database } from '@/lib/types/database'
 
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key"
-)
-
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
+      process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key"
+    )
     // Rate limiting
     const clientIP = getClientIP(request)
     const rateLimitResult = await rateLimit(
