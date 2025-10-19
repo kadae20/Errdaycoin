@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createDirectClient } from '@/lib/supabase/client'
 
-const supabase = createDirectClient()
-
 // 관심종목에서 제거
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabase = createDirectClient()
     const authHeader = request.headers.get('authorization')
     
     if (!authHeader?.startsWith('Bearer ')) {

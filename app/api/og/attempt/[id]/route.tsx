@@ -2,8 +2,6 @@ import { ImageResponse } from '@vercel/og'
 import { NextRequest } from 'next/server'
 import { createDirectClient } from '@/lib/supabase/client'
 
-const supabase = createDirectClient()
-
 export const runtime = 'nodejs'
 
 export async function GET(
@@ -11,6 +9,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabase = createDirectClient()
     const attemptId = params.id
 
     // Fetch attempt data

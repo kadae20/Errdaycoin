@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createDirectClient } from '@/lib/supabase/client'
 
-const supabase = createDirectClient()
-
 // 좋아요 추가
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabase = createDirectClient()
     const authHeader = request.headers.get('authorization')
     
     if (!authHeader?.startsWith('Bearer ')) {
@@ -88,6 +87,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabase = createDirectClient()
     const authHeader = request.headers.get('authorization')
     
     if (!authHeader?.startsWith('Bearer ')) {
