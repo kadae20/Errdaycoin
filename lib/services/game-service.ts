@@ -536,25 +536,41 @@ export class GameService {
       const rewardAmount = 3 // +3 tokens
       const limitBonus = 3 // +3 limit increase
 
-      // 추천인 보상 (토큰 + 한도)
+      // 추천인 보상 (토큰 + 한도) - 현재 값 가져온 후 업데이트
+      const { data: referrerData, error: referrerFetchError } = await this.supabase
+        .from('user_tokens')
+        .select('retry_tokens, referral_tokens, daily_limit')
+        .eq('user_id', referrerId)
+        .single()
+
+      if (referrerFetchError) throw referrerFetchError
+
       const { error: referrerError } = await this.supabase
         .from('user_tokens')
         .update({
-          retry_tokens: this.supabase.raw('retry_tokens + ?', [rewardAmount]),
-          referral_tokens: this.supabase.raw('referral_tokens + ?', [rewardAmount]),
-          daily_limit: this.supabase.raw('COALESCE(daily_limit, 15) + ?', [limitBonus]),
+          retry_tokens: (referrerData.retry_tokens || 0) + rewardAmount,
+          referral_tokens: (referrerData.referral_tokens || 0) + rewardAmount,
+          daily_limit: (referrerData.daily_limit || 15) + limitBonus,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', referrerId)
 
       if (referrerError) throw referrerError
 
-      // 피추천인 보상 (토큰 + 한도)
+      // 피추천인 보상 (토큰 + 한도) - 현재 값 가져온 후 업데이트
+      const { data: refereeData, error: refereeFetchError } = await this.supabase
+        .from('user_tokens')
+        .select('retry_tokens, daily_limit')
+        .eq('user_id', refereeId)
+        .single()
+
+      if (refereeFetchError) throw refereeFetchError
+
       const { error: refereeError } = await this.supabase
         .from('user_tokens')
         .update({
-          retry_tokens: this.supabase.raw('retry_tokens + ?', [rewardAmount]),
-          daily_limit: this.supabase.raw('COALESCE(daily_limit, 15) + ?', [limitBonus]),
+          retry_tokens: (refereeData.retry_tokens || 0) + rewardAmount,
+          daily_limit: (refereeData.daily_limit || 15) + limitBonus,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', refereeId)
