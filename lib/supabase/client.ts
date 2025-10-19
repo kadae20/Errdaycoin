@@ -11,20 +11,15 @@ export const createClient = () => {
     
     console.log('Creating Supabase client with URL:', supabaseUrl)
     
-    return createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    }) as any
+    // Next.js auth helpers를 사용하여 올바른 클라이언트 생성
+    return createClientComponentClient<Database>()
   } catch (error) {
     console.error('Error creating Supabase client:', error)
     // 에러 발생 시 fallback client 반환
     return createSupabaseClient<Database>(
       'https://placeholder.supabase.co',
       'placeholder-key'
-    )
+    ) as any
   }
 }
 
