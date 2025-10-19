@@ -18,12 +18,15 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
   const [isConfigured] = useState(isSupabaseConfigured())
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
+  const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
-    if (!isConfigured) {
+    if (!isConfigured || initialized) {
       setLoading(false)
       return
     }
+
+    setInitialized(true)
 
     // 초기 사용자 상태 확인
     const checkUser = async () => {
