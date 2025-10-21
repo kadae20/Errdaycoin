@@ -9,8 +9,8 @@ export const maxDuration = 30
 export async function GET(request: NextRequest) {
   try {
     const supabase = createClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
-      process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key"
+      "https://xuqwdkzpvowhigowecwj.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1cXdka3pwdm93aGlnb3dlY3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDA3NDcsImV4cCI6MjA3MjIxNjc0N30.UcbPHTCxNC1Qc90Pzg8N2Nuh2SuiJ0FX2mVrdf8V4Y0"
     )
     const authHeader = request.headers.get('authorization')
     
