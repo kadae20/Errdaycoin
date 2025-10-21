@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from './providers'
 import AuthModal from '@/components/AuthModal'
 import BitgetBanner, { BitgetFloatingBanner } from '@/components/BitgetBanner'
-import { ResponsiveAd, BannerAd } from '@/components/GoogleAdSense'
 import StructuredData from '@/components/StructuredData'
 import { referralService } from '@/lib/services/referral-service'
 
@@ -78,7 +77,7 @@ export default function HomePageClient() {
       <BitgetBanner />
       
       {/* 전체 화면을 꽉 채우기 위해 고정 HEX 컬러 그라데이션 사용 */}
-      <div className="min-h-screen w-full bg-gradient-to-br from-[#1f1300] via-[#7a3e00] to-[#c25a00] relative overflow-hidden">
+      <div className="min-h-screen w-screen bg-gradient-to-br from-[#1f1300] via-[#7a3e00] to-[#c25a00] relative overflow-hidden">
 
       {/* Animated Background */}
       <div className="absolute inset-0">
@@ -295,10 +294,6 @@ export default function HomePageClient() {
         </div>
       </div>
 
-      {/* Bottom Ad */}
-      <div className="relative z-10 p-6">
-        <ResponsiveAd className="w-full" />
-      </div>
 
       {/* Floating Bitget Banner */}
       <BitgetFloatingBanner />

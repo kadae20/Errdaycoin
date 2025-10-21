@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import ErrdayCoinGame from '@/components/ErrdayCoinGame'
 import AuthModal from '@/components/AuthModal'
-import { BannerAd } from '@/components/GoogleAdSense'
 import { useAuth } from '@/app/providers'
 import { referralService } from '@/lib/services/referral-service'
 
@@ -57,9 +56,6 @@ export default function PlayPageClient() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 상단 배너 광고 */}
-      <BannerAd className="w-full" />
-      
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* 메인 게임 영역 */}
         <ErrdayCoinGame 
@@ -68,9 +64,6 @@ export default function PlayPageClient() {
           isGuestMode={isGuestMode}
         />
       </div>
-      
-      {/* 하단 배너 광고 */}
-      <BannerAd className="w-full" />
       
       {showAuthModal && (
         <AuthModal 

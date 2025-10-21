@@ -115,7 +115,7 @@ export default function ErrdayCoinGame({ onShowAuth, onGameComplete, isGuestMode
             chartData: [],
             previewData: [],
             currentCandleIndex: 0,
-            nextdayUsesLeft: 1,
+            nextdayUsesLeft: GAME_CONSTANTS.DEFAULT_NEXTDAY_USES,
             isPositionOpen: false,
             isLiquidated: false,
             gameEnded: false,
@@ -498,7 +498,7 @@ export default function ErrdayCoinGame({ onShowAuth, onGameComplete, isGuestMode
           previewData: gameData.preview_candles,
           currentCandleIndex: gameData.preview_candles.length - 1,  // 인덱스는 0부터 시작하므로 -1
           // 게스트 모드는 항상 1회 한도
-          nextdayUsesLeft: isGuestMode ? 1 : GAME_CONSTANTS.DEFAULT_NEXTDAY_USES,
+          nextdayUsesLeft: GAME_CONSTANTS.DEFAULT_NEXTDAY_USES,
           isPositionOpen: false,
           isLiquidated: false,
           gameEnded: false,
