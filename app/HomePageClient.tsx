@@ -144,7 +144,7 @@ export default function HomePageClient() {
       </nav>
 
       {/* Main Content - 전체 화면 꽉 채우기 */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen text-center px-6">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen text-center px-4 w-full">
         <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 leading-tight">
           Realistic
           <span className="text-yellow-400 block">Futures Trading Game</span>
@@ -157,8 +157,8 @@ export default function HomePageClient() {
           Experience position management and risk with up to 100x leverage
         </p>
         
-        {/* Game Modes */}
-        <div className="bg-gray-800 bg-opacity-60 rounded-xl p-6 mb-8 max-w-4xl">
+        {/* Game Modes - 숨김 처리 */}
+        <div className="hidden">
           <h3 className="text-xl font-bold text-yellow-400 mb-4">🎮 Two Ways to Play</h3>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-gray-700 bg-opacity-50 p-4 rounded-lg">
@@ -208,8 +208,8 @@ export default function HomePageClient() {
           ⚡ Start Game
         </button>
 
-        {/* How It Works */}
-        <div className="bg-gray-800 bg-opacity-40 rounded-xl p-6 mb-8 max-w-4xl">
+        {/* How It Works - 숨김 처리 */}
+        <div className="hidden">
           <h3 className="text-lg font-bold text-yellow-400 mb-4">🎯 How It Works</h3>
           <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-300">
             <div className="text-center">
@@ -230,66 +230,68 @@ export default function HomePageClient() {
           </div>
         </div>
 
-        {/* Features Section */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-6xl">
-          <div className="bg-gray-800 bg-opacity-40 rounded-xl p-6">
-            <h3 className="text-lg font-bold text-yellow-400 mb-3">
-              🎮 Free Trading Simulator
-            </h3>
-            <p className="text-gray-300 text-sm mb-4">
-              Practice futures trading without risking real money. Learn leverage trading concepts with realistic market data.
-            </p>
-            <ul className="text-sm text-gray-400 space-y-1">
-              <li>• Real Binance historical data</li>
-              <li>• Up to 100x leverage simulation</li>
-              <li>• Liquidation price calculation</li>
-              <li>• Next-day PnL tracking</li>
-            </ul>
-          </div>
-          
-          <div className="bg-gray-800 bg-opacity-40 rounded-xl p-6">
-            <h3 className="text-lg font-bold text-yellow-400 mb-3">
-              🏆 Referral Rewards
-            </h3>
-            <p className="text-gray-300 text-sm mb-4">
-              Invite friends and earn rewards together. Both you and your friend get bonus tokens and daily limits.
-            </p>
-            <ul className="text-sm text-gray-400 space-y-1">
-              <li>• +3 retry tokens for both</li>
-              <li>• +3 daily limit increase</li>
-              <li>• Unique referral codes</li>
-              <li>• Track your referrals</li>
-            </ul>
-          </div>
-          
-          <div className="bg-gray-800 bg-opacity-40 rounded-xl p-6">
-            <h3 className="text-lg font-bold text-yellow-400 mb-3">
-              📚 Educational Content
-            </h3>
-            <p className="text-gray-300 text-sm mb-4">
-              Learn about futures trading, leverage, and risk management through interactive gameplay.
-            </p>
-            <ul className="text-sm text-gray-400 space-y-1">
-              <li>• Interactive tutorials</li>
-              <li>• Real market scenarios</li>
-              <li>• Risk management lessons</li>
-              <li>• Trading psychology insights</li>
-            </ul>
-          </div>
-          
-          <div className="bg-gray-800 bg-opacity-40 rounded-xl p-6">
-            <h3 className="text-lg font-bold text-yellow-400 mb-3">
-              🔗 Real Trading Integration
-            </h3>
-            <p className="text-gray-300 text-sm mb-4">
-              Ready for real trading? Get started with Bitget using our referral link for fee discounts.
-            </p>
-            <ul className="text-sm text-gray-400 space-y-1">
-              <li>• Bitget referral benefits</li>
-              <li>• Fee discount rewards</li>
-              <li>• Seamless transition</li>
-              <li>• 100x leverage available</li>
-            </ul>
+        {/* Features Section - 숨김 처리 */}
+        <div className="hidden">
+          <div className="grid md:grid-cols-2 gap-8 max-w-6xl">
+            <div className="bg-gray-800 bg-opacity-40 rounded-xl p-6">
+              <h3 className="text-lg font-bold text-yellow-400 mb-3">
+                🎮 Free Trading Simulator
+              </h3>
+              <p className="text-gray-300 text-sm mb-4">
+                Practice futures trading without risking real money. Learn leverage trading concepts with realistic market data.
+              </p>
+              <ul className="text-sm text-gray-400 space-y-1">
+                <li>• Real Binance historical data</li>
+                <li>• Up to 100x leverage simulation</li>
+                <li>• Liquidation price calculation</li>
+                <li>• Next-day PnL tracking</li>
+              </ul>
+            </div>
+            
+            <div className="bg-gray-800 bg-opacity-40 rounded-xl p-6">
+              <h3 className="text-lg font-bold text-yellow-400 mb-3">
+                🏆 Referral Rewards
+              </h3>
+              <p className="text-gray-300 text-sm mb-4">
+                Invite friends and earn rewards together. Both you and your friend get bonus tokens and daily limits.
+              </p>
+              <ul className="text-sm text-gray-400 space-y-1">
+                <li>• +3 retry tokens for both</li>
+                <li>• +3 daily limit increase</li>
+                <li>• Unique referral codes</li>
+                <li>• Track your referrals</li>
+              </ul>
+            </div>
+            
+            <div className="bg-gray-800 bg-opacity-40 rounded-xl p-6">
+              <h3 className="text-lg font-bold text-yellow-400 mb-3">
+                📚 Educational Content
+              </h3>
+              <p className="text-gray-300 text-sm mb-4">
+                Learn about futures trading, leverage, and risk management through interactive gameplay.
+              </p>
+              <ul className="text-sm text-gray-400 space-y-1">
+                <li>• Interactive tutorials</li>
+                <li>• Real market scenarios</li>
+                <li>• Risk management lessons</li>
+                <li>• Trading psychology insights</li>
+              </ul>
+            </div>
+            
+            <div className="bg-gray-800 bg-opacity-40 rounded-xl p-6">
+              <h3 className="text-lg font-bold text-yellow-400 mb-3">
+                🔗 Real Trading Integration
+              </h3>
+              <p className="text-gray-300 text-sm mb-4">
+                Ready for real trading? Get started with Bitget using our referral link for fee discounts.
+              </p>
+              <ul className="text-sm text-gray-400 space-y-1">
+                <li>• Bitget referral benefits</li>
+                <li>• Fee discount rewards</li>
+                <li>• Seamless transition</li>
+                <li>• 100x leverage available</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
