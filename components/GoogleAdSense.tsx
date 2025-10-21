@@ -16,6 +16,12 @@ export default function GoogleAdSense({
   className = ''
 }: GoogleAdSenseProps) {
   useEffect(() => {
+    // AdSense는 실제 슬롯 ID가 설정된 후에 활성화
+    if (!adSlot || adSlot.includes('1234567890') || adSlot.includes('0987654321') || adSlot.includes('1122334455')) {
+      console.log('AdSense disabled: No valid ad slot configured')
+      return
+    }
+
     try {
       // Google AdSense 스크립트 로드
       if (typeof window !== 'undefined' && !window.adsbygoogle) {
@@ -33,7 +39,7 @@ export default function GoogleAdSense({
     } catch (error) {
       console.error('AdSense error:', error)
     }
-  }, [])
+  }, [adSlot])
 
   return (
     <div className={`ad-container ${className}`} style={adStyle}>

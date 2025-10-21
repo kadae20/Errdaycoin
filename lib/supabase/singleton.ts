@@ -30,7 +30,19 @@ const initializeClient = () => {
 
   try {
     console.log('Initializing Supabase client...')
-    _supabaseClient = createClientComponentClient<Database>()
+    
+    // 하드코딩된 환경 변수 사용 (Vercel 환경 변수 문제 해결)
+    const supabaseUrl = 'https://xuqwdkzpvowhigowecwj.supabase.co'
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1cXdka3pwdm93aGlnb3dlY3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDA3NDcsImV4cCI6MjA3MjIxNjc0N30.UcbPHTCxNC1Qc90Pzg8N2Nuh2SuiJ0FX2mVrdf8V4Y0'
+    
+    _supabaseClient = createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    }) as any
+    
     console.log('Supabase client initialized successfully')
     return _supabaseClient
   } catch (error) {

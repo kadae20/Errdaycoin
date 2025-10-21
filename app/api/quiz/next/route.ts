@@ -4,6 +4,9 @@ import { GetQuizRequestSchema, GetQuizResponseSchema } from '@/lib/types'
 import { rateLimit, getClientIP } from '@/lib/utils/rate-limit'
 import { Database } from '@/lib/types/database'
 
+// Vercel 함수 타임아웃 설정 (최대 30초)
+export const maxDuration = 30
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = createClient<Database>(

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+// Vercel 함수 타임아웃 설정 (최대 30초)
+export const maxDuration = 30
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = createClient()

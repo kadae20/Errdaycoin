@@ -74,7 +74,7 @@ export class ReferralService {
       const maxAttempts = 10
 
       do {
-        code = this.generateRandomCode()
+        code = this.generateUniqueReferralCode(userId)
         attempts++
 
         // 중복 체크
@@ -90,7 +90,9 @@ export class ReferralService {
         }
 
         if (attempts >= maxAttempts) {
-          throw new Error('Failed to generate unique referral code')
+          // 해시 기반 코드가 중복되면 랜덤으로 생성
+          code = this.generateRandomCode()
+          break
         }
       } while (true)
 
@@ -150,7 +152,7 @@ export class ReferralService {
     }
   }
 
-  // 랜덤 코드 생성 (8자리 영숫자)
+  // 사용자 ID 기반 고유 코드 생성 (8자리 영숫자)
   private generateRandomCode(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     let result = ''
@@ -158,6 +160,41 @@ export class ReferralService {
       result += chars.charAt(Math.floor(Math.random() * chars.length))
     }
     return result
+  }
+
+  // 사용자 ID 기반 고유 코드 생성 (8자리 영숫자)
+  private generateUniqueReferralCode(userId?: string): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    let result = ''
+    
+    if (userId) {
+      // 사용자 ID를 기반으로 일관된 코드 생성 (더 안정적인 해시)
+      const hash1 = this.simpleHash(userId)
+      const hash2 = this.simpleHash(userId + 'errdaycoin')
+      
+      for (let i = 0; i < 8; i++) {
+        const combinedHash = (hash1 + hash2 + i * 7) % chars.length
+        result += chars.charAt(Math.abs(combinedHash))
+      }
+    } else {
+      // 사용자 ID가 없으면 랜덤 생성
+      for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length))
+      }
+    }
+    
+    return result
+  }
+
+  // 간단한 해시 함수
+  private simpleHash(str: string): number {
+    let hash = 0
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i)
+      hash = ((hash << 5) - hash) + char
+      hash = hash & hash // 32bit 정수로 변환
+    }
+    return Math.abs(hash)
   }
 
   // 추천 코드로 회원가입 처리

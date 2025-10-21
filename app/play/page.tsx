@@ -32,6 +32,12 @@ export const metadata: Metadata = {
   },
 }
 
+import { Suspense } from 'react'
+
 export default function PlayPage() {
-  return <PlayPageClient />
+  return (
+    <Suspense fallback={null}>
+      <PlayPageClient />
+    </Suspense>
+  )
 }

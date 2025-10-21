@@ -285,7 +285,12 @@ export class GameService {
 
       // 추천 보상 토큰 계산
       const referralBonus = await this.getUserReferralBonus(userId)
-      const totalTokens = data.retry_tokens + referralBonus
+      const baseRetryTokens = (data as any)?.retry_tokens || 0
+      const totalTokens = baseRetryTokens + referralBonus
+      
+      console.log('🔍 getUserTokens - Base retry tokens:', baseRetryTokens)
+      console.log('🔍 getUserTokens - Referral bonus:', referralBonus)
+      console.log('🔍 getUserTokens - Total tokens:', totalTokens)
 
       // 잔액 확인 및 리셋 (1000 미만이면 1000으로 리셋)
       const currentBalance = parseFloat(data.balance)
@@ -307,7 +312,7 @@ export class GameService {
       }
 
       return {
-        ...data,
+        ...(data as any),
         retry_tokens: totalTokens, // 추천 보상 포함한 총 토큰 수
         balance: resetBalance.toFixed(2)
       }
@@ -394,7 +399,10 @@ export class GameService {
 
       if (fetchError) throw fetchError
       
-      if (baseTokens.retry_tokens <= 0) {
+      const retryTokens = (baseTokens as any)?.retry_tokens || 0
+      console.log('🔍 consumeRetryToken - Current retry tokens:', retryTokens)
+      
+      if (retryTokens <= 0) {
         throw new Error('토큰이 부족합니다.')
       }
 
@@ -402,7 +410,7 @@ export class GameService {
       const { error: updateError } = await this.getSupabase()
         .from('user_tokens')
         .update({ 
-          retry_tokens: baseTokens.retry_tokens - 1,
+          retry_tokens: retryTokens - 1,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', userId)

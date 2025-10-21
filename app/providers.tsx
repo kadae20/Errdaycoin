@@ -144,23 +144,7 @@ export default function ClientProviders({
 }: {
   children: React.ReactNode
 }) {
-  const [isReady, setIsReady] = useState(false)
-
-  useEffect(() => {
-    // 클라이언트에서만 실행되도록 보장
-    setIsReady(true)
-  }, [])
-
-  if (!isReady) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-4 border-green-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-green-400">Loading Errdaycoin...</p>
-        </div>
-      </div>
-    )
-  }
+  // 초기 로딩 스피너 제거 (SEO에 로딩 화면이 잡히지 않도록)
 
   return (
     <QueryClientProvider client={queryClient}>

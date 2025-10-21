@@ -6,91 +6,29 @@ import ClientProviders from './providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: {
-    default: 'ErrdayCoin - Free Crypto Futures Trading Simulator Game',
-    template: '%s | ErrdayCoin - Crypto Trading Simulator'
-  },
-  description: 'Master crypto futures trading with our free interactive simulator! Practice with real Bitcoin & Ethereum charts, learn leverage trading up to 100x, and compete on leaderboards. No risk, real rewards - start trading today!',
-  keywords: [
-    'crypto futures trading simulator',
-    'bitcoin trading game',
-    'ethereum futures practice',
-    'crypto chart analysis game',
-    'leverage trading simulator',
-    'crypto demo trading',
-    'bitcoin chart quiz',
-    'crypto trading practice',
-    'futures trading game',
-    'crypto trading simulator free',
-    'bitcoin leverage trading',
-    'crypto trading education',
-    'trading simulator online',
-    'crypto quiz game',
-    'trading practice platform'
-  ],
-  authors: [{ name: 'ErrdayCoin Team' }],
-  creator: 'ErrdayCoin',
-  publisher: 'ErrdayCoin',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://errdaycoin.com'),
+  title: "ErrdayCoin | Crypto Futures Trading Game & Bitcoin Quiz",
+  description: "Play a free crypto futures simulator. Long/short up to 100x, with next-day PnL and liquidation like real trading.",
   alternates: {
-    canonical: '/',
+    canonical: "https://www.errdaycoin.com/",
     languages: {
-      'en-US': '/en',
-      'ko-KR': '/ko',
-      'ja-JP': '/ja',
-      'zh-CN': '/zh',
-      'es-ES': '/es',
-      'fr-FR': '/fr',
-    },
+      "en": "https://www.errdaycoin.com/",
+      // 한국어 페이지(/kr) 오픈 시 아래 주석 해제
+      // "ko": "https://www.errdaycoin.com/kr",
+      "x-default": "https://www.errdaycoin.com/"
+    }
   },
   openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: '/',
-    siteName: 'ErrdayCoin',
-    title: 'ErrdayCoin - Free Crypto Futures Trading Simulator',
-    description: 'Master crypto futures trading with our free interactive simulator! Practice with real Bitcoin & Ethereum charts, learn leverage trading up to 100x, and compete on leaderboards.',
-    images: [
-      {
-        url: '/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'ErrdayCoin - Crypto Futures Trading Simulator',
-      },
-    ],
+    title: "ErrdayCoin – Crypto Futures Trading Simulator",
+    description: "Go long/short with up to 100x and see PnL & liq price.",
+    url: "https://www.errdaycoin.com/",
+    siteName: "ErrdayCoin",
+    type: "website"
   },
   twitter: {
-    card: 'summary_large_image',
-    site: '@errdaycoin',
-    creator: '@errdaycoin',
-    title: 'ErrdayCoin - Free Crypto Futures Trading Simulator',
-    description: 'Master crypto futures trading with our free interactive simulator! Practice with real Bitcoin & Ethereum charts, learn leverage trading up to 100x.',
-    images: ['/twitter-image.jpg'],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    nocache: false,
-    googleBot: {
-      index: true,
-      follow: true,
-      noimageindex: false,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-  verification: {
-    google: 'your-google-verification-code',
-    yandex: 'your-yandex-verification-code',
-    yahoo: 'your-yahoo-verification-code',
-    other: {
-      'naver-site-verification': 'naver44c756841488cf6c7a14fe54c4eb56b8',
-    },
-  },
-  category: 'Finance',
-  classification: 'Educational Game',
-  referrer: 'origin-when-cross-origin',
+    card: "summary_large_image",
+    title: "ErrdayCoin – Crypto Futures Trading Simulator",
+    description: "Practice long/short up to 100x with next-day PnL."
+  }
 }
 
 export const viewport = {

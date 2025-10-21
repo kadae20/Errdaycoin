@@ -1,8 +1,12 @@
 {
-  "crons": [
-    {
-      "path": "/api/daily-reset",
-      "schedule": "0 5 * * *"
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
     }
-  ]
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_SITE_URL": "https://www.errdaycoin.com"
+    }
+  }
 }
