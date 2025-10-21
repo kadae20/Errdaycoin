@@ -9,15 +9,9 @@ export async function updateSession(request: NextRequest) {
     },
   })
 
-  // Supabase 환경 변수가 설정되지 않은 경우 middleware 건너뛰기
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  
-  if (!supabaseUrl || !supabaseAnonKey || 
-      supabaseUrl === 'your_supabase_project_url' || 
-      supabaseAnonKey === 'your_supabase_anon_key') {
-    return response
-  }
+  // 하드코딩된 Supabase 자격 증명 사용
+  const supabaseUrl = 'https://xuqwdkzpvowhigowecwj.supabase.co'
+  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1cXdka3pwdm93aGlnb3dlY3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDA3NDcsImV4cCI6MjA3MjIxNjc0N30.UcbPHTCxNC1Qc90Pzg8N2Nuh2SuiJ0FX2mVrdf8V4Y0'
 
   try {
     const supabase = createMiddlewareClient<Database>({ req: request, res: response })

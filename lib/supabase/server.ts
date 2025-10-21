@@ -17,15 +17,8 @@ export const createClient = () =>
 
 // Service Role 클라이언트 (관리자 권한)
 export const createServiceClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  
-  if (!supabaseUrl || !serviceRoleKey || 
-      supabaseUrl === 'your_supabase_project_url' || 
-      serviceRoleKey === 'your_supabase_service_role_key') {
-    console.warn('Supabase service role environment variables are not properly configured')
-    return null
-  }
+  const supabaseUrl = 'https://xuqwdkzpvowhigowecwj.supabase.co'
+  const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1cXdka3pwdm93aGlnb3dlY3dqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjY0MDc0NywiZXhwIjoyMDcyMjE2NzQ3fQ.placeholder'
   
   return createSupabaseClient<Database>(supabaseUrl, serviceRoleKey, {
     auth: {
